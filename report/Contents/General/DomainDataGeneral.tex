@@ -1,0 +1,59 @@
+%%%
+%
+% $Autor: Wings $
+% $Date: 2024-10-31 11:15:45Z $
+% $File: file.tex $
+% $Version: 1 $
+%
+% Project: 
+%
+%%%
+
+\chapter{Domain Data General}
+\label{ch:domain-data-general}
+
+This chapter acts as a short bridge between the domain problem and the later implementation-oriented data chapters. Its purpose is not to repeat the full operational discussion from Chapter~\ref{ch:domain-problem} or the detailed repository-grounded data analysis from the application-development part, but to summarize what kind of dataset the project works with and why it is suitable for classical time-series forecasting.
+
+\section{Dataset Identity}
+
+The dataset used in this project is the German monthly Consumer Price Index (CPI) from the Destatis GENESIS database, specifically table \textbf{61111-0002}. Because the data is published by the Federal Statistical Office of Germany, it provides a trustworthy and methodologically documented basis for an academic forecasting task \cite{DestatisCPIQuality2023,DestatisCPIWeighting2023}. In the repository, the downloaded CSV is stored as \texttt{Code/data/61111-0002\_en.csv}.
+
+Table~\ref{tab:cpi-source-summary} summarizes the most important identifying properties of the dataset.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Compact summary of the CPI dataset used in the project. Source: own summary based on Destatis GENESIS table 61111-0002 \cite{DestatisCPIQuality2023,DestatisCPIWeighting2023}.}
+	\label{tab:cpi-source-summary}
+	\begin{tabular}{ll}
+		\hline
+		Property & Description \\
+		\hline
+		Source & Destatis GENESIS Database \\
+		Table & 61111-0002 \\
+		Spatial scope & Germany \\
+		Frequency & Monthly \\
+		Base year & 2020 = 100 \\
+		Cleaned range & January 1991 to February 2026 \\
+		Observations & 422 monthly CPI values \\
+		Modeling type & Univariate economic time series \\
+		\hline
+	\end{tabular}
+\end{table}
+
+\section{Variable and Structure}
+
+The target variable is the \textbf{CPI index level}. This is important because the project forecasts the index value itself, not a derived inflation percentage. The cleaned modeling structure consists of one monthly datetime index and one numeric target column, \texttt{CPI}. This makes the final dataset a univariate chronological series that can be passed directly into ARIMA, ETS, and SARIMA after preprocessing.
+
+The raw Destatis export contains additional structural elements such as metadata rows, status markers, and percentage-change columns. Those details are relevant for preprocessing, but they are intentionally discussed later in the application-development chapters, where the repository's actual parsing and cleaning steps are documented in detail.
+
+\section{Temporal Characteristics}
+
+The dataset spans more than three decades and therefore covers different inflation environments rather than only one short stable period. This long monthly history is sufficient for comparing classical forecasting models that rely on trend, persistence, and potential annual seasonality. The CPI level also shows the expected long-run upward movement of a price index, which makes questions of non-stationarity and transformation methodologically relevant for the later modeling stages \cite{Hyndman2021,Box2015}.
+
+At the same time, the series contains economically meaningful irregular periods, including the post-2021 inflation surge and shorter policy- or energy-related disturbances \cite{DestatisCovidCPI2022,DestatisEnergyPriceTrends2023}. These phenomena matter because they make the forecasting task more realistic, but their detailed treatment as anomalies, outliers, and preprocessing decisions is covered later where the implementation and evaluation are discussed more concretely.
+
+\section{Strengths and Limits for Modeling}
+
+The main strength of the dataset is its official origin, regular monthly frequency, and long historical coverage. Together, these properties make it a good candidate for a controlled comparison of classical time-series methods. The main limitation is the deliberately univariate design: the models only receive past CPI values and do not directly use exogenous drivers such as wages, exchange rates, taxes, energy prices, or monetary-policy variables. As a result, the later forecasts should be interpreted as statistical continuation models of CPI behavior rather than as causal explanations of inflation \cite{StockWatson1999}.
+
+In short, this chapter establishes that the dataset is methodologically credible, structurally suitable for classical time-series analysis, and limited in exactly the way the project intends. The more detailed discussion of raw format, preprocessing rules, anomalies, and data quality is intentionally deferred to the later development chapters so that the report avoids unnecessary duplication.

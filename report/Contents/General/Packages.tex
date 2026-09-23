@@ -1,0 +1,58 @@
+%%%
+%
+% $Autor: Siddhanth Sharma $
+% $Date: 2024-10-31 11:15:45Z $
+% $File: file.tex $
+% $Version: 3 $
+%
+% Project: BA26-04 Time Series Forecasting CPI Germany
+%
+%%%
+
+\chapter{Description of Important Packages}
+\label{ch:important-packages}
+
+The implementation of the CPI forecasting system relies on a focused set of Python libraries with clearly separated roles. In this project, package selection is not a secondary technical detail, because the complete KDD workflow depends on stable support for data handling, statistical modeling, evaluation, visualization, serialization, and deployment. Reproducible analytical workflows depend not only on algorithms, but also on the software environment in which those algorithms are executed and evaluated \cite{Hyndman2021}. The report therefore documents all important packages explicitly and ties them to the actual repository files instead of describing them only in generic terms.
+
+The project dependency list in \FILELOC{Code/requirements.txt} contains eight direct Python packages: \textbf{pandas}, \textbf{matplotlib}, \textbf{statsmodels}, \textbf{scikit-learn}, \textbf{jinja2}, \textbf{joblib}, \textbf{streamlit}, and \textbf{plotly}. In addition, \textbf{NumPy} is used throughout the codebase as a foundational numerical library, even though it is pulled in transitively through \textbf{pandas} and \textbf{statsmodels}. Table~\ref{tab:all-packages-overview} gives a complete mapping of every package to its role in the CPI forecasting pipeline.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Complete overview of Python packages used in the CPI forecasting system.}
+    \label{tab:all-packages-overview}
+    {\small
+    \renewcommand{\arraystretch}{1.22}
+    \setlength{\tabcolsep}{6pt}
+    \begin{tabular}{L{2.6cm}L{4.8cm}L{5.5cm}}
+        \hline
+        Package & Main role in the project & Primary repository context \\
+        \hline
+        \textbf{pandas} & Data loading, cleaning, time-index construction, and CSV export & \FILELOC{Code/src/data\_loader.py}, \FILELOC{Code/src/modeling\_pipeline.py} \\
+        \textbf{NumPy} & Numerical arrays, missing-value handling, and metric computation & \FILELOC{Code/src/data\_loader.py}, \FILELOC{Code/src/modeling\_pipeline.py}, \FILELOC{Code/app.py} \\
+        \textbf{matplotlib} & Static plot generation for EDA and forecast comparison & \FILELOC{Code/src/eda\_pipeline.py}, \FILELOC{Code/src/modeling\_pipeline.py} \\
+        \textbf{statsmodels} & Forecast model estimation, parameter fitting, and prediction & \FILELOC{Code/src/models.py}, \FILELOC{Code/src/modeling\_pipeline.py} \\
+        \textbf{scikit-learn} & Forecast evaluation metrics for chronological holdout testing & \FILELOC{Code/src/modeling\_pipeline.py}, \FILELOC{Code/app.py} \\
+        \textbf{joblib} & Serialization and deserialization of trained model objects & \FILELOC{Code/src/modeling\_pipeline.py}, \FILELOC{Code/app.py} \\
+        \textbf{plotly} & Interactive chart rendering inside the Streamlit dashboard & \FILELOC{Code/app.py} \\
+        \textbf{streamlit} & Interactive deployment and user-facing forecast interpretation & \FILELOC{Code/app.py} \\
+        \textbf{jinja2} & Templating dependency (pulled in by \textbf{pandas} and \textbf{plotly}) & Transitive dependency \\
+        \hline
+    \end{tabular}
+    }
+\end{table}
+
+Three libraries are especially central to the implemented workflow and are therefore documented in dedicated chapters that follow this one. First, \textbf{statsmodels} provides the statistical forecasting engines used to fit the ARIMA, ETS, and SARIMA models in \FILELOC{Code/src/models.py} \cite{statsmodels-doc}. Second, \textbf{scikit-learn} supplies the evaluation metrics used in \FILELOC{Code/src/modeling\_pipeline.py} to compare forecast accuracy through RMSE, MAE, and MAPE \cite{scikit-learn-doc}. Third, \textbf{Streamlit} is used in \FILELOC{Code/app.py} to convert the trained forecasting system into an interactive application for visual comparison and interpretation \cite{streamlit-doc}.
+
+The remaining packages---\textbf{pandas}, \textbf{NumPy}, \textbf{matplotlib}, \textbf{plotly}, and \textbf{joblib}---are briefly summarized below because they perform essential tasks that the pipeline cannot complete without, but they do not require the same depth of documentation as the three primary analytical and deployment libraries.
+
+\textbf{Pandas} is the data-manipulation backbone of the project. It handles CSV ingestion, datetime indexing, train-test splitting, and result export in \FILELOC{Code/src/data\_loader.py} and \FILELOC{Code/src/modeling\_pipeline.py}. Without it, the Destatis export could not be converted into a strict monthly time series that forecasting libraries can consume.
+
+\textbf{NumPy} underpins every numerical operation performed by \textbf{pandas}, \textbf{statsmodels}, \textbf{scikit-learn}, and \textbf{matplotlib}. In the repository it is used directly for missing-value representation (\texttt{np.nan}) in \FILELOC{Code/src/data\_loader.py} and for RMSE computation (\texttt{np.sqrt}) in \FILELOC{Code/src/modeling\_pipeline.py}. Its foundational role in numerical Python workflows is well documented in the scientific-computing literature, where efficient array operations are treated as a core enabler for reproducible analytical programming \cite{Harris:2020}.
+
+\textbf{Matplotlib} generates the static diagnostic and forecast plots that are saved to \FILELOC{Code/plots/}. It is used in \FILELOC{Code/src/eda\_pipeline.py} for historical series, differencing, ACF/PACF, and decomposition figures, and in \FILELOC{Code/src/modeling\_pipeline.py} for the forecast comparison plots.
+
+\textbf{Plotly} renders the interactive charts inside the Streamlit dashboard. It is used exclusively in \FILELOC{Code/app.py} to create line charts with hover, zoom, and pan capabilities that help users explore forecast details without modifying code.
+
+\textbf{Joblib} serializes and deserializes the trained model objects. After fitting in \FILELOC{Code/src/modeling\_pipeline.py}, each model is saved as a \texttt{.joblib} file in \FILELOC{Code/saved\_models/}. The dashboard then loads these files at runtime with \texttt{joblib.load}, avoiding retraining on every startup.
+
+All packages are installed from \FILELOC{Code/requirements.txt} via \texttt{pip install -r Code/requirements.txt}. The next three chapters focus on the three packages that are most directly responsible for the project's analytical core: \textbf{statsmodels} for model estimation, \textbf{scikit-learn} for evaluation, and \textbf{Streamlit} for deployment. Each of these chapters follows the same structure---introduction, description, installation, example description, example manual, example code, example files, and further reading---so that the reader can understand not only what the library does in general, but exactly how it contributes to forecasting Germany's monthly CPI.

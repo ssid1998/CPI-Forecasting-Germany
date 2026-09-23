@@ -1,0 +1,104 @@
+%%%%%%%%%%%%
+%
+% Troubleshooting
+%
+%%%%%%%%%%%%
+
+\chapter{Troubleshooting}
+\label{ch:troubleshooting}
+
+This chapter helps the user respond to the most common dashboard-side problems. The structure is symptom-oriented: first identify what went wrong, then apply the smallest reasonable fix.
+
+\section{The Dashboard Does Not Start}
+
+If the dashboard does not start after running the launch script, the most common causes are:
+
+\begin{itemize}
+    \item dependencies were not installed,
+    \item the script was started from the wrong folder,
+    \item the virtual environment was not created correctly.
+\end{itemize}
+
+First, rerun the installation step from Chapter~\ref{ch:installation-first-launch}. If the problem remains, contact support.
+
+\section{The Browser Opens but No Forecast Appears}
+
+If the page title appears but no valid forecast is shown, the likely cause is that required model artifacts are missing or inconsistent. In that situation, a normal user should not attempt backend repair directly. Instead, document the visible message and report it to a maintainer.
+
+\section{The Graph Appears but the Confidence Band Is Missing}
+
+If the chart appears but the confidence interval does not, the dashboard may still be usable for basic point-forecast inspection. Try changing the model or confidence interval level once. If the problem remains, report it as a maintainer-side issue.
+
+\section{The Wrong Page or Blank Page Opens}
+
+If the browser opens a page that does not show the CPI dashboard title, confirm that the local Streamlit address was copied correctly from the terminal window. If multiple local pages are open in the browser, refresh the tab or reopen the exact address printed during launch.
+
+\section{Legend or Chart Interaction Does Not Behave as Expected}
+
+If clicking a legend item appears to do nothing, click it once more and watch the line visibility carefully. In dense charts, hidden traces may still seem close to the remaining lines. If zoom or pan behaves unexpectedly, use the chart reset control to return to the default view.
+
+\section{Troubleshooting Decision Diagram}
+
+\begin{figure}[H]
+    \centering
+    \resizebox{0.92\textwidth}{!}{%
+    \begin{tikzpicture}[node distance=1.2cm, >=latex]
+        \tikzstyle{box}=[rectangle, rounded corners, draw=red!60!black, fill=red!8, align=center, text width=3.1cm, minimum height=0.9cm]
+        \tikzstyle{decision}=[diamond, aspect=2, draw=orange!70!black, fill=orange!10, align=center, text width=2.5cm, inner sep=1pt]
+        \node[box] (symptom) {Problem observed};
+        \node[decision, below=of symptom] (startapp) {Dashboard starts?};
+        \node[box, left=3cm of startapp] (install) {Repeat installation and launch steps};
+        \node[decision, below=of startapp] (title) {Correct dashboard title visible?};
+        \node[box, right=3cm of title] (reopen) {Reopen the correct local browser address};
+        \node[decision, below=of title] (content) {Forecast content visible?};
+        \node[box, left=3cm of content] (support) {Capture the error and contact support};
+        \node[box, below=of content] (use) {Continue normal use or report smaller UI issue};
+
+        \draw[->, thick] (symptom) -- (startapp);
+        \draw[->, thick] (startapp) -- node[above]{no} (install);
+        \draw[->, thick] (startapp) -- node[right]{yes} (title);
+        \draw[->, thick] (title) -- node[above]{no} (reopen);
+        \draw[->, thick] (title) -- node[right]{yes} (content);
+        \draw[->, thick] (content) -- node[above]{no} (support);
+        \draw[->, thick] (content) -- node[right]{yes} (use);
+    \end{tikzpicture}%
+    }
+    \caption{Troubleshooting path for the most common user-side problems.}
+    \label{fig:troubleshooting-flow}
+\end{figure}
+
+\section{Quick Reference Table}
+
+\begin{table}[H]
+    \centering
+    \small
+    \setlength{\tabcolsep}{5pt}
+    \renewcommand{\arraystretch}{1.15}
+    \caption{Common problems, causes, and user-side remedies.}
+    \begin{tabularx}{\textwidth}{|L{3.0cm}|L{3.8cm}|X|}
+        \hline
+        \textbf{Symptom} & \textbf{Likely cause} & \textbf{Recommended action} \\
+        \hline
+        Launch script fails & Environment or dependency issue & Repeat the installation steps and verify you are in \FILELOC{Code/}. \\
+        \hline
+        Browser opens wrong page & Wrong local URL or old tab & Reopen the exact local address printed by Streamlit. \\
+        \hline
+        Dashboard loads but no forecast appears & Missing or broken model artifacts & Capture the message and contact a maintainer. \\
+        \hline
+        Confidence interval missing & Partial model-output issue & Try another model or interval level; if unchanged, report it. \\
+        \hline
+        Chart interaction seems odd & Zoom/legend state changed & Use the chart reset control and try again. \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black, title=Quick Diagnostic Checklist]
+Before contacting support, verify:
+\begin{itemize}
+    \item Did you run the launch script from the \FILELOC{Code/} directory?
+    \item Did you open the exact local URL printed by Streamlit?
+    \item Did you wait for the dashboard title and sidebar to load?
+    \item Did you try refreshing the page or restarting the dashboard once?
+\end{itemize}
+If all four are true and the problem remains, it is time to escalate.
+\end{tcolorbox}

@@ -1,0 +1,40 @@
+%%%
+%
+% $Autor: Nayan Chavan$
+% $Date: 2024-10-31 11:15:45Z $
+% $File: file.tex $
+% $Version: 2 $
+%
+% Project: BA26-04 Time Series Forecasting CPI Germany
+%
+%%%
+
+\chapter{Development to Deployment Conclusion}
+
+The transition from development to deployment is successful in the sense that this project goes beyond offline experimentation. The repository does not stop at fitting models in isolated notebooks or scripts. Instead, it produces trained model artifacts, evaluation metrics, and visual outputs that can be reused directly in a deployed Streamlit dashboard. This makes the project more complete and more practical than a purely script-based forecasting exercise.
+
+At the same time, the current solution still has clear limitations. The comparison uses fixed model specifications rather than systematic hyperparameter tuning, the evaluation relies on one hold-out window instead of rolling-origin backtesting, and the forecasting setup is intentionally univariate. The system is also sensitive to structural breaks, because abrupt macroeconomic shifts may not be captured well by patterns learned from earlier observations alone. For that reason, the deployed application is useful for model comparison, interpretation, and demonstration, but it should not yet be treated as a production-grade inflation forecasting system.
+
+\section{Self-Critical Reflection}
+
+A self-critical assessment of the project reveals several areas where the current implementation could be strengthened. First, the hyperparameter choices for ARIMA and SARIMA were based on diagnostic inspection rather than on systematic optimization. While the selected orders are reasonable and parsimonious, an automated search over a grid of candidate orders might identify configurations that perform better on the test period. Second, the ETS model was specified with additive components throughout. Although this choice is well supported by the data, a formal comparison with multiplicative alternatives would strengthen the justification. Third, the evaluation uses only one fixed test window. A single 24-month holdout period is informative, but it does not establish whether the observed ranking between models would persist under different economic conditions.
+
+Another limitation concerns the univariate design. The models receive only past CPI values, which means they cannot react to external information such as energy price shocks, policy announcements, or exchange-rate movements. In practice, macroeconomic forecasters often use multivariate models or judgmental adjustments to incorporate such information. The current project deliberately avoids this complexity to keep the comparison transparent, but the trade-off is that the forecasts are purely statistical continuations of the CPI series rather than economically informed predictions.
+
+Finally, the deployment layer is a local Streamlit application rather than a production service. It does not include automated retraining, alerting, or containerization. These are acceptable limitations for a student project, but they mean that the dashboard is a presentation and exploration tool rather than an operational forecasting system.
+
+\section{Unanswered Points}
+
+Several questions remain open. It is not yet clear how robust the ranking between ETS, ARIMA, and SARIMA would remain under alternative test windows or rolling validation schemes. It is also unresolved whether additional economic variables such as energy prices or interest-rate indicators would materially improve forecast performance. The effect of structural breaks on long-horizon stability deserves more systematic study. Another open question is whether the seasonal patterns in German CPI are stable enough to justify the fixed seasonal period of 12, or whether they evolve over time in ways that would favor more adaptive seasonal models. Finally, the project does not address how the forecasting system should be updated when new monthly CPI data becomes available, or how model drift should be detected and handled in a recurring operational setting.
+
+\section{Next Steps}
+
+Realistic next steps are to add rolling backtesting, residual diagnostics, and sensitivity analysis for alternative training horizons. Rolling-origin evaluation would test whether the ETS advantage is stable across multiple test windows or whether it depends on the specific 2024--2026 period. Residual diagnostics would check whether the models have fully exploited the information in the training data or whether systematic patterns remain unmodeled. Sensitivity analysis would reveal how the results change when the training length or the forecast horizon is varied.
+
+Beyond these methodological extensions, the project could be enriched with exogenous variables. Including energy prices, wage indices, or monetary policy indicators might improve forecast accuracy, especially during periods of structural change. Automated monthly retraining would keep the models current as new CPI data is published. Stronger deployment monitoring, as discussed in the Monitoring chapter, would ensure that the dashboard remains reliable when data sources, dependencies, or model artifacts change over time.
+
+A longer-term direction is to move from a local Streamlit application to a containerized or cloud-based deployment. This would make the forecasting system accessible to a broader audience and would support features such as scheduled retraining, email alerts, and API-based forecast retrieval. These enhancements are beyond the current project scope, but they represent a natural evolution from the present implementation.
+
+\section{Final Reflection}
+
+Despite its limitations, the project achieves its core objective: it demonstrates a reproducible, end-to-end workflow for comparing classical time-series forecasting models on an economically relevant dataset. The KDD structure ensures that each stage---from data selection through preprocessing, transformation, modeling, evaluation, and deployment---is documented and traceable. The Streamlit dashboard makes the results accessible to non-technical users. The evaluation metrics provide an objective basis for model comparison. These qualities make the project a solid foundation for further development and a useful reference for students approaching time-series forecasting in a software and data context.

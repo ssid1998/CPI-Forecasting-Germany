@@ -1,0 +1,262 @@
+%%%
+%
+% $Autor: Gargi Barve $
+% $Date: 2024-10-31 11:15:45Z $
+% $File: file.tex $
+% $Version: 1 $
+%
+% Project: 
+%
+%%%
+
+\chapter{Monitoring}
+
+Monitoring in this project means more than occasionally rerunning the forecasting scripts. A CPI forecasting system can fail in at least three different ways after deployment: the incoming Destatis data can change its structure, the training and evaluation pipeline can stop regenerating the expected artifacts, or the forecast quality can degrade as the inflation regime changes. For that reason, monitoring must check both the technical integrity of the workflow and the statistical plausibility of the resulting forecasts. In this project, monitoring is not primarily a privacy problem because the data is public and aggregate. It is instead a reliability and reproducibility problem that affects whether the dashboard can still be trusted after each monthly update.
+
+The current repository now contains a concrete monitoring workflow rather than only a conceptual one. The script \FILELOC{Code/scripts/monitor\_cpi\_pipeline.py} orchestrates the monthly checks, while \FILELOC{Code/src/monitoring\_utils.py} contains the reusable validation logic. The workflow validates the CPI source file, runs the targeted pytest suite, checks whether expected model and plot artifacts exist, and compares the latest evaluation metrics against a stored baseline in \FILELOC{Code/monitoring/baseline\_metrics.csv}. A JSON summary of the latest monitoring run is written to \FILELOC{Code/monitoring/latest\_monitoring\_report.json}.
+
+\section{Monitoring Idea}
+
+A deployed CPI forecasting system must be monitored because both the incoming data and the forecast behavior can change over time. In this project, the monthly Destatis CPI release may change in content, structure, or chronology, and the forecasting models may degrade when the economic regime shifts. Monitoring therefore has two objectives. First, it should detect pipeline failures early, such as missing files, broken parsing, or incomplete artifact generation. Second, it should detect performance drift, meaning that the forecast metrics from a new run have deteriorated materially compared with the most recently accepted baseline.
+
+This idea is especially important for a univariate macroeconomic forecasting system. The project intentionally relies on the CPI series alone and does not use exogenous indicators that might help explain abrupt regime changes. As a result, the deployed models are particularly dependent on the stability of the historical pattern they have learned. Monitoring is the mechanism that tells the operator when this assumption still appears acceptable and when the workflow should be reviewed more critically.
+
+\section{Monitoring Plan}
+
+The monitoring plan has three implemented layers. First, the latest CPI file is validated for file existence, successful loading, monthly continuity, non-duplication, numeric CPI values, and strict monthly frequency. Second, the targeted monitoring-oriented test suite is executed so that the most important data-loading, model-wrapper, and monitoring helper behaviors are checked before a new run is accepted. Third, the workflow verifies that the expected deployment artifacts exist and that the latest evaluation metrics can be compared with a stored baseline.
+
+The most important point is that monitoring is now a governed sequence rather than a loose recommendation. A monitoring run is expected to fail if one of the hard checks fails, and deployment should not be refreshed until the failure is resolved. This turns the monitoring chapter into an operational control concept instead of a general reflection on good practice.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Core monitoring checks for the CPI forecasting system.}
+	\label{tab:monitoring-checks}
+	\begin{tabular}{p{4cm}p{8.5cm}}
+		\hline
+		Check & Why it matters \\
+		\hline
+		File existence & The forecasting pipeline cannot start without the expected source file \\
+		Date continuity & Irregular time indices would invalidate classical time-series assumptions \\
+		Numeric CPI values & Non-numeric or missing values would break downstream modeling steps \\
+		Model loadability & Deployment depends on the availability of serialized model artifacts \\
+		Metric drift & Performance deterioration may indicate structural change or pipeline failure \\
+		\hline
+	\end{tabular}
+\end{table}
+
+\section{Getting New Data}
+
+New monthly CPI releases are expected to replace or extend \texttt{Code/data/61111-0002\_en.csv}. The monitoring workflow must confirm that the file is readable, that month names can still be mapped correctly, and that the resulting index remains strictly monthly. Any change in separator conventions, footer structure, or placeholder values should be treated as a potential breaking change for \texttt{load\_cpi\_data()}.
+
+Operationally, the project currently assumes a manual update trigger: the operator replaces the CPI CSV with the newest official version, then executes the monitoring script from the \FILELOC{Code/} directory. This is less automated than a production ingestion pipeline, but it is honest to the current repository state and still strong enough for a reproducible monthly update procedure.
+
+\section{Data Updating in the ML Pipeline}
+
+Once a new file is available, the existing project structure can be reused directly. The data loader prepares the updated series, the EDA pipeline re-generates diagnostics, the modeling pipeline retrains ARIMA, ETS, and SARIMA, and the Streamlit app then presents the updated results. This reuse of existing modules is one of the practical strengths of the current architecture.
+
+The corresponding command sequence is now explicit. From the \FILELOC{Code/} directory, the operator can run \SHELL{python scripts/monitor\_cpi\_pipeline.py}. This command validates the updated CPI series, runs the monitoring-related tests, executes the existing EDA and modeling steps unless explicitly skipped, verifies the regenerated artifacts, and writes a machine-readable monitoring report. On the first accepted run, the operator can additionally use \SHELL{python scripts/monitor\_cpi\_pipeline.py --accept-baseline} to store the current metric output as the accepted baseline for future drift comparison.
+
+\begin{figure}[htbp]
+	\centering
+	\input{../../tikz/Monitoring/MonitoringUpdateWorkflow.tikz}
+	\caption{Monitoring and monthly update workflow for the CPI forecasting system.}
+	\label{fig:monitoring-flow}
+\end{figure}
+
+\section{Checks}
+
+The most important checks are the following:
+
+\begin{itemize}
+	\item \textbf{File check:} confirm that the expected CSV exists and is readable.
+	\item \textbf{Date continuity check:} ensure that the monthly index has no duplicates or gaps.
+	\item \textbf{Value check:} ensure that CPI values are numeric and that missing placeholders were handled correctly.
+	\item \textbf{Model artifact check:} confirm that the three expected \texttt{.joblib} files exist after retraining.
+	\item \textbf{Plot and metric artifact check:} confirm that \texttt{evaluation\_metrics.csv}, \texttt{evaluation\_metrics.tex}, \texttt{forecast\_comparison.png}, and \texttt{test\_forecast\_comparison.png} were regenerated.
+	\item \textbf{Metric drift check:} compare new RMSE, MAE, and MAPE values against the stored baseline.
+\end{itemize}
+
+The current implemented drift rule uses a percentage threshold rather than a purely subjective manual review. In \FILELOC{Code/src/monitoring\_utils.py}, the monitoring workflow compares the newly generated metric file against \FILELOC{Code/monitoring/baseline\_metrics.csv}. The default threshold is \textbf{15\%}. If a metric for a shared model rises above \textbf{$\mathrm{baseline} \times 1.15$}, the corresponding monitoring check fails. This does not fully replace statistical judgment, but it does provide a concrete decision rule for detecting unusual deterioration.
+
+The same logic also defines abort conditions. If the CPI file cannot be loaded, if the monthly frequency check fails, if the targeted tests fail, or if expected model/plot artifacts are missing after the pipeline run, the monitoring workflow should be treated as failed and the dashboard should not be refreshed as the new accepted state.
+
+\subsection{Baseline and Latest Metrics Comparison}
+
+The monitoring workflow stores an accepted baseline in \FILELOC{Code/monitoring/baseline\_metrics.csv} and compares each new run against it. Table~\ref{tab:baseline-latest-comparison} shows an example of how the baseline and a hypothetical latest run would be compared for drift detection.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Example baseline versus latest metrics comparison for drift detection.}
+	\label{tab:baseline-latest-comparison}
+	\begin{tabular}{lcccccc}
+		\hline
+		\textbf{Model} & \multicolumn{3}{c}{\textbf{Baseline}} & \multicolumn{3}{c}{\textbf{Latest Run}} \\
+		\cmidrule(lr){2-4} \cmidrule(lr){5-7}
+		& RMSE & MAE & MAPE (\%) & RMSE & MAE & MAPE (\%) \\
+		\hline
+		ARIMA (1,1,1) & 1.3262 & 1.1088 & 0.9104 & 1.4123 & 1.1856 & 0.9721 \\
+		ETS (A,A,A) & 0.7697 & 0.6453 & 0.5298 & 0.8012 & 0.6714 & 0.5513 \\
+		SARIMA (1,1,1)(1,1,1)$_{12}$ & 1.1909 & 0.9956 & 0.8173 & 1.2678 & 1.0598 & 0.8702 \\
+		\hline
+	\end{tabular}
+\end{table}
+
+In this example, none of the metrics exceeds the 15\% drift threshold relative to the baseline, so the monitoring run would pass. If, for instance, the latest ETS RMSE had risen to 0.90 (a 17\% increase), the drift check would fail and the operator would be prompted to investigate before accepting the new run.
+
+\subsection{Monitoring Report Format}
+
+After each monitoring run, the workflow writes a machine-readable summary to \FILELOC{Code/monitoring/latest\_monitoring\_report.json}. This file contains the complete pass/fail status of every check, the timestamp of the run, and the metric values used for drift comparison. Listing~\ref{lst:monitoring-report-snippet} shows a simplified excerpt from such a report.
+
+\begin{Python}[caption={Simplified excerpt from a monitoring report JSON file}, label={lst:monitoring-report-snippet}]
+{
+  "timestamp": "2026-05-15T09:23:17",
+  "overall_status": "PASSED",
+  "checks": [
+    {"name": "file_exists", "passed": true},
+    {"name": "monthly_frequency", "passed": true},
+    {"name": "numeric_cpi_values", "passed": true},
+    {"name": "pytest_suite", "passed": true},
+    {"name": "model_artifacts", "passed": true},
+    {"name": "metric_drift", "passed": true}
+  ],
+  "metrics": {
+    "ARIMA": {"RMSE": 1.3262, "MAE": 1.1088, "MAPE": 0.9104},
+    "ETS": {"RMSE": 0.7697, "MAE": 0.6453, "MAPE": 0.5298},
+    "SARIMA": {"RMSE": 1.1909, "MAE": 0.9956, "MAPE": 0.8173}
+  }
+}
+\end{Python}
+
+This JSON structure makes the monitoring outcome inspectable after the fact and supports automated alerting if the overall status is not \texttt{PASSED}.
+
+\section{Code: Functions}
+
+The monitoring process is now built around concrete code paths already present in the repository. \texttt{load\_cpi\_data()} validates the incoming file structurally and returns the strict monthly CPI series. \texttt{run\_eda()} in \FILELOC{Code/src/eda\_pipeline.py} regenerates exploratory diagnostics and therefore acts as a quick analytical sanity check on the updated data. \texttt{evaluate\_models()} in \FILELOC{Code/src/modeling\_pipeline.py} retrains the three forecasting models and rewrites the evaluation artifacts used by both the report and the dashboard. The helper functions in \FILELOC{Code/src/monitoring\_utils.py} then verify the resulting artifacts and compare the metric output against the stored baseline.
+
+The monitoring-specific module is organized around a small set of focused functions. \texttt{validate\_cpi\_series()} performs the source-data checks and returns a list of named pass/fail results rather than only one boolean status. \texttt{verify\_required\_artifacts()} checks the existence of the expected \texttt{.joblib}, \texttt{.csv}, \texttt{.tex}, and \texttt{.png} outputs after the pipeline has run. \texttt{load\_metrics\_table()} normalizes the evaluation CSV into the metric structure required for drift comparison. \texttt{compare\_metrics\_against\_baseline()} implements the threshold-based drift logic for RMSE, MAE, and MAPE. Finally, \texttt{write\_monitoring\_report()} stores the complete result set as a JSON file so that the outcome of the monitoring run remains inspectable after the command has finished.
+
+At script level, \FILELOC{Code/scripts/monitor\_cpi\_pipeline.py} is intentionally thin. It only resolves the source directory and passes control to \texttt{monitoring\_cli()}, which keeps the actual monitoring logic in a reusable Python module rather than inside a shell wrapper. This structure is preferable for the report because it means the chapter can point to one monitoring entrypoint and one monitoring utility module instead of describing fragmented logic spread across multiple ad hoc scripts.
+
+\begin{Python}[caption={Monitoring workflow orchestration in the utility layer}, label={lst:monitoring-cli-flow}]
+def monitoring_cli(argv: list[str] | None = None) -> int:
+    results = []
+    results.extend(validate_cpi_series(data_path))
+    results.append(run_command("pytest_monitoring_suite", [...], cwd=base_dir))
+    results.append(run_command("eda_pipeline", [sys.executable, "src/eda_pipeline.py"], cwd=base_dir))
+    results.append(run_command("modeling_pipeline", [sys.executable, "src/modeling_pipeline.py"], cwd=base_dir))
+    results.extend(verify_required_artifacts(base_dir))
+    results.extend(compare_metrics_against_baseline(current_metrics, baseline_csv, args.threshold_pct))
+    write_monitoring_report(latest_report, results)
+    return 0 if all(result.passed for result in results) else 1
+\end{Python}
+
+At deployment level, \FILELOC{Code/app.py} remains an important practical check because it depends on the existence and loadability of the serialized model artifacts. If the monitoring process succeeds but the dashboard still cannot load the saved models, then the monitoring design would still be incomplete. This is why model-artifact and deployment-artifact verification are included explicitly in the workflow rather than assumed implicitly.
+
+Table~\ref{tab:monitoring-function-map} summarizes how the main monitoring functions relate to concrete checks, tests, and resulting artifacts.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Mapping of monitoring functions to checks and artifacts.}
+    \label{tab:monitoring-function-map}
+    {\small
+    \renewcommand{\arraystretch}{1.18}
+    \setlength{\tabcolsep}{6pt}
+    \begin{tabular}{L{3.8cm}L{4.4cm}L{3.0cm}L{3.0cm}}
+        \hline
+        Function or entrypoint & Main responsibility & Related test coverage & Main artifact or outcome \\
+        \hline
+        \texttt{load\_cpi\_data()} & Parse the Destatis CSV and enforce a clean monthly CPI series & \texttt{test\_data\_loader.py} & validated dataframe \\
+        \texttt{validate\_cpi\_series()} & Check file existence, monthly frequency, duplicates, and missing CPI values & \texttt{test\_monitoring\_workflow.py} & pass/fail monitoring results \\
+        \texttt{run\_eda()} & Regenerate analytical diagnostics for the updated CPI series & indirect through monitoring script & refreshed plots in \FILELOC{Code/plots/} \\
+        \texttt{evaluate\_models()} & Retrain models and regenerate evaluation metrics and forecast plots & \texttt{test\_models.py} plus monitoring workflow & \texttt{.joblib}, metrics, plots \\
+        \texttt{verify\_required\_artifacts()} & Confirm presence of expected model and plot outputs & \texttt{test\_monitoring\_workflow.py} & artifact existence checks \\
+        \texttt{compare\_metrics\_against\_baseline()} & Apply threshold-based drift control to RMSE, MAE, and MAPE & \texttt{test\_monitoring\_workflow.py} & metric drift decision \\
+        \texttt{monitoring\_cli()} / \FILELOC{scripts/monitor\_cpi\_pipeline.py} & Orchestrate the complete monitoring sequence & exercised by real monitoring runs & \FILELOC{latest\_monitoring\_report.json} \\
+        \hline
+    \end{tabular}
+    }
+\end{table}
+
+\section{Code: Test}
+
+The monitoring workflow is now connected to a real test layer. It is important to distinguish between the \emph{monitoring script} and the \emph{tests}. The script \FILELOC{Code/scripts/monitor\_cpi\_pipeline.py} is the operational entrypoint for the monthly monitoring run. It does not replace automated testing. Instead, it calls a dedicated pytest-based validation suite so that the update process is checked systematically before new artifacts are accepted.
+
+The targeted command executed by the monitoring script is:
+
+\begin{Python}[caption={Monitoring-oriented test command}, label={lst:monitoring-pytest-command}]
+python -m pytest tests/test_data_loader.py tests/test_models.py tests/test_monitoring_workflow.py -v
+\end{Python}
+
+The current testing strategy is therefore not based on one script alone, but on a layered combination of one operational monitoring command and several focused pytest modules. Each pytest file protects a different stage of the monthly control process.
+
+\subsection*{1. Data Validation Tests}
+
+\FILELOC{Code/tests/test\_data\_loader.py} protects the earliest stage of the monitoring workflow. Its purpose is to ensure that the updated Destatis CPI file can still be parsed into a valid modeling series before any retraining is attempted. In practical terms, these tests check that the dataset loads successfully, that the resulting dataframe is non-empty, that the \texttt{CPI} column is numeric, that the index is a \texttt{DatetimeIndex}, and that the frequency remains strictly monthly. The file also tests the expected failure case for a missing source file. These checks matter because the entire downstream pipeline would become unreliable if malformed or incomplete CPI input were silently accepted.
+
+\subsection*{2. Model Wrapper Tests}
+
+\FILELOC{Code/tests/test\_models.py} validates the forecasting wrappers that are reused by both the offline evaluation pipeline and the deployed dashboard. It checks that the common interface raises the expected \texttt{NotImplementedError} conditions and that the ARIMA, ETS, and SARIMA wrappers can each fit, predict, and generate confidence intervals with the expected output structure. This layer is important for monitoring because a monthly update should not only confirm that new data exists, but also that the model abstractions still behave consistently after retraining. If a wrapper breaks, the monitoring process should treat the update as failed even if the data file itself was valid.
+
+\subsection*{3. Monitoring Integration Tests}
+
+\FILELOC{Code/tests/test\_monitoring\_workflow.py} extends the project from general unit testing to monitoring-aware validation. This file checks three monitoring-specific behaviors. First, it confirms that the committed CPI dataset passes the monitoring validation rules implemented in \texttt{validate\_cpi\_series()}. Second, it checks that the expected deployment artifacts already exist in the repository state through \texttt{verify\_required\_artifacts()}. Third, it verifies that the drift-comparison logic actually fails when a metric file is artificially degraded beyond the allowed threshold. This last check is especially important because it proves that metric drift is not only described in the report, but implemented as executable logic.
+
+\subsection*{4. Test Structure and Operational Role}
+
+Taken together, these files form a layered automated test suite that the monitoring script invokes as one stage of the monthly control process. The data-loader tests prevent silent acceptance of malformed CPI input, the model-wrapper tests reduce the risk that retraining writes unusable artifacts, and the monitoring integration tests reduce the risk that the monitoring script reports success without actually checking the artifact chain or the threshold logic. This division of responsibilities is stronger than a single monolithic test file because it makes failures easier to localize and easier to interpret during maintenance.
+
+The current test layer is still lighter than a full deployment test framework, because it does not yet launch the dashboard automatically after retraining. For the current project scope, however, it already provides a credible and well-structured combination of unit-style and integration-style checks, which is a substantial improvement over a purely conceptual monitoring description.
+
+\begin{Python}[caption={Example monitoring assertions in the test suite}, label={lst:monitoring-test-assertions}]
+results = validate_cpi_series(os.path.join(BASE_DIR, "data", "61111-0002_en.csv"))
+assert all(result.passed for result in results)
+
+results = verify_required_artifacts(BASE_DIR)
+assert all(result.passed for result in results)
+
+results = compare_metrics_against_baseline(str(drifted_csv), str(baseline_csv), threshold_pct=10.0)
+assert any(not result.passed for result in results)
+\end{Python}
+
+The current tests do not yet launch the dashboard automatically after retraining. For the current project scope, however, the implemented structure is already defensible: one operational monitoring script coordinates the workflow, and several focused pytest modules validate the most important data, model, artifact, and drift assumptions beneath it. This is a substantially stronger approach than either a script without tests or isolated tests without an operational monitoring entrypoint.
+
+\section{Privacy}
+
+Privacy risk is low because the project uses public macroeconomic data from Destatis rather than personal data. The more relevant concern is data integrity: the correct official source must be used, and manual file replacement should not introduce corrupted or unofficial data into the pipeline.
+
+\section{Robustness}
+
+The main robustness risks are missing months, changed CSV formatting, and incompatibility between serialized models and updated code. A good monitoring setup should therefore fail clearly and diagnostically rather than silently. Informative messages such as ``data file not found'', ``monthly index gap detected'', or ``model file missing'' are more valuable than hidden failure.
+
+In this project, robustness must also be understood at the artifact-chain level. Deployment depends on the data file in \FILELOC{Code/data/}, the model files in \FILELOC{Code/saved\_models/}, and the evaluation/plot outputs in \FILELOC{Code/plots/}. Monitoring is therefore not complete if it checks only data quality. It must also confirm that the full downstream chain has been regenerated successfully and remains consistent with the current code environment. This is one of the main differences between a statistical experiment and a monitored deployable project.
+
+\subsection{Alerting and Notification}
+
+The current monitoring workflow reports failures through the JSON report and through the script's exit code. A failed run returns exit code 1, which can be detected by a shell wrapper or a scheduled task scheduler. The JSON report contains detailed pass/fail information for each check, making it possible to identify which specific stage failed without re-running the entire pipeline.
+
+For a production deployment, this mechanism could be extended with explicit alerting. Examples include:
+
+\begin{itemize}
+	\item \textbf{Email notification:} A shell wrapper could parse the JSON report and send an email if the overall status is not \texttt{PASSED}.
+	\item \textbf{Log aggregation:} The monitoring script could write to a centralized logging system where failures trigger dashboards or pager alerts.
+	\item \textbf{Scheduled execution:} A cron job or task scheduler could run the monitoring script automatically after each monthly Destatis release, reducing the risk that the operator forgets to trigger the check.
+\end{itemize}
+
+These extensions are not implemented in the current repository, but the existing JSON report and exit-code design make them straightforward to add. The important point is that the monitoring workflow already produces a machine-readable decision (pass/fail) that can drive downstream alerting logic.
+
+\section{Process}
+
+The operational monitoring cycle can be summarized as follows:
+
+\begin{enumerate}
+	\item Obtain the latest official Destatis CPI release and replace or extend \FILELOC{Code/data/61111-0002\_en.csv}.
+	\item Run \SHELL{python scripts/monitor\_cpi\_pipeline.py} from the \FILELOC{Code/} directory.
+	\item Validate the source file, monthly continuity, numeric CPI values, and test-suite status.
+	\item Regenerate EDA outputs and retrain/evaluate the forecasting models.
+	\item Verify that all required model and plot artifacts exist.
+	\item Compare the new metric file against the stored baseline using the 15\% drift threshold.
+	\item If all checks pass, accept the run and keep the regenerated dashboard inputs; if needed, update the baseline with \SHELL{--accept-baseline} after manual review.
+	\item If any hard check fails, stop deployment refresh and investigate the reported failure before publishing new results.
+\end{enumerate}
+
+This procedure keeps the system aligned with official monthly CPI updates while preserving reproducibility. It is still partly manual because data acquisition and deployment publication are triggered by the operator. However, it is now substantially stronger than a purely narrative monitoring plan because it is backed by a real script, a real baseline file, a real JSON monitoring report, and a focused test layer that exercises the central monitoring claims made in this chapter.

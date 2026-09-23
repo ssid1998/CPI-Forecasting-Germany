@@ -1,0 +1,100 @@
+%%%
+%
+% $Autor: Gargi Barve $
+% $Date: 2026-04-22 $
+% $File: DomainProblem.tex $
+% $Version: 1.4 $
+%
+% Project: BA26-04 Time Series Forecasting CPI Germany
+%
+%%%
+
+\chapter{Domain Problem}
+\label{ch:domain-problem}
+
+\section{Application}
+
+The application domain of this project is \textbf{Macroeconomic Time Series Forecasting}, specifically centered on the modeling and prediction of the \textbf{Consumer Price Index (CPI)} in Germany. Inflation forecasting is a cornerstone of empirical macroeconomics; as established by \cite{StockWatson1999}, it is the primary metric used by central banks and financial institutions to gauge price stability and formulate monetary policy. In the German context, the CPI is the definitive measure of the "cost of living," making its accurate prediction essential for maintaining economic equilibrium within the Eurozone.
+
+\subsection{Economic Utility and Practical Significance}
+
+The CPI serves as a Laspeyres-type index, tracking the price changes of a representative basket of goods and services over time. According to the principles discussed in \cite{Wilmott:2007}, the ability to forecast this index is critical for several real-world applications:
+
+\begin{itemize}
+	\item \textbf{Monetary Policy Alignment:} The European Central Bank (ECB) utilizes CPI forecasts to adjust interest rates, aiming for a medium-term inflation target of 2\%. Accurate forecasting prevents over-tightening or excessive easing of the economy.
+	
+	\item \textbf{Financial Risk Management:} Forecasting inflation is necessary for determining the "real" return on investments. As Wilmott emphasizes, without accurate CPI projections, long-term capital allocation is subject to significant \textbf{purchasing power risk}, where inflation erodes the nominal gains of an investment.
+	
+	\item \textbf{Contractual and Wage Indexation:} In Germany, many legal and commercial contracts—including industrial wage agreements (\textit{Tarifverträge}) and commercial lease escalations—are programmatically tied to the \textbf{Destatis CPI} figures.
+\end{itemize}
+
+\subsection{Theoretical Framework in Time Series}
+
+Following the framework established in \cite{Hyndman2021}, this application treats the CPI as a \textbf{Stochastic Process}. Unlike highly volatile financial assets, the CPI exhibits high \textbf{structural persistence}. This means that the current inflation level is heavily influenced by its own history, making it an ideal candidate for autoregressive modeling.
+
+The application utilizes the \cite{Box2015} methodology to identify the characteristics of the underlying \textbf{Data-Generating Process (DGP)}, specifically looking for:
+\begin{itemize}
+	\item \textbf{Deterministic Trends:} Long-term persistent upward movements reflecting systemic economic growth or currency devaluation.
+	\item \textbf{Seasonal Fluctuations:} Predictable monthly variations often found in energy costs (heating in winter) or the German tourism and retail sectors.
+\end{itemize}
+
+\subsection{Scientific and Methodological Suitability}
+
+This domain is well suited to the \textbf{KDD (Knowledge Discovery in Databases)} process because the data is provided by \textbf{Destatis (GENESIS Database)}. This ensures a high level of data integrity and data quality, which are essential for reliable analysis.
+
+By applying \textbf{ARIMA, ETS, and SARIMA} models, this project demonstrates how classical statistical learning—as outlined in \cite{Hastie2009}—can be used to extract meaningful signals from noisy economic environments.
+
+\section{Problem}
+
+The core research problem is a \textbf{univariate time series forecasting task} targeting the German CPI. The technical challenge lies in estimating a predictive function that maps historical observations $y_{t}, y_{t-1}, \dots, y_{t-n}$ to a future value $\hat{y}_{t+h}$. 
+
+Following \cite{Box2015}, the problem is framed as identifying the underlying \textbf{stochastic process} that governs inflation. This requires addressing:
+
+\begin{itemize}
+	\item \textbf{Modeling Non-Stationarity:} As discussed by \cite{Shumway2017}, the persistent upward trend in German inflation necessitates integration (differencing) to stabilize the series. 
+	\item \textbf{Decomposition of Temporal Components:} The problem requires a model that can effectively decompose the series into trend, seasonality, and residuals \cite{Hyndman2021}.
+	\item \textbf{Algorithm Selection:} As highlighted in \cite{Hastie2009}, there is a trade-off between model complexity and generalization when comparing \textbf{ARIMA}, \textbf{ETS}, and \textbf{SARIMA}.
+\end{itemize}
+
+\subsection{Objective of the Problem}
+The objective is to minimize the empirical risk, measured through the loss function $\mathcal{L}(y, \hat{y})$, across the chronological holdout period. In the implemented pipeline, the last 24 monthly observations are reserved for testing, while all earlier observations are used for fitting. Using the workflow suggested in \cite{Brownlee2017}, the task is to ensure that the chosen models remain robust enough to predict the recent inflationary environment. Success is defined by the minimization of \textbf{RMSE, MAE, and MAPE}.
+
+\section{Data Acquisition}
+
+The data is sourced from the \textbf{Destatis GENESIS Database}, Table \textbf{61111-0002}. 
+\begin{itemize}
+	\item \textbf{Data Type:} Univariate economic time series.
+	\item \textbf{Access Method:} Exported as CSV and ingested using the \texttt{pandas} library.
+	\item \textbf{URL Reference:} \url{https://www-genesis.destatis.de/datenbank/online/statistic/61111/table/61111-0002}
+\end{itemize}
+This ensures the "ground truth" integrity required for professional forecasting \cite{MachineLearningRisk:2021}.
+
+\section{Data Quantity}
+
+Following \cite{Box2015}, the dataset provides a robust volume of observations. The range extends from \textbf{January 1991 to early 2026}, totaling over \textbf{420 monthly observations}. This $N > 400$ exceeds the minimum requirements for ARIMA/SARIMA, which typically require $N > 50$ to stabilize parameter estimation.
+
+\section{Data Quality}
+
+According to \cite{Brownlee2017}, data quality determines model reliability. In forecasting practice, robust data quality is also a prerequisite for credible model comparison and later decision support \cite{Chase:2013,Armstrong:2001}. The Destatis dataset exhibits:
+\begin{itemize}
+	\item \textbf{Chronological Integrity:} Strictly ordered from 1991 to 2026 with no irregular gaps.
+	\item \textbf{Completeness:} No missing values (NaNs), removing the need for imputation.
+	\item \textbf{Stationarity Potential:} High resolution allows for clean mathematical transformations (differencing) required by the \cite{Box2015} methodology.
+\end{itemize}
+
+\section{Data Relevance}
+
+According to \cite{StockWatson1999}, the CPI is the most relevant variable for inflation forecasting because it measures the "pass-through" effect of economic shocks. In our project:
+\begin{itemize}
+	\item It aligns with German macroeconomic planning.
+	\item It serves as a proxy for the internal purchasing power of the Euro \cite{Wilmott:2007}.
+	\item Its strong \textbf{autocorrelation} makes it the most relevant feature for ARIMA/SARIMA models \cite{Hastie2009}.
+\end{itemize}
+
+\section{Outliers}
+
+In this project, economically unusual observations—such as the temporary VAT-related dip around 2020—are treated as part of the real history of the CPI series rather than as simple measurement errors. This distinction is important, because outlier-analysis literature warns that unusual observations may either reflect noise or encode rare but meaningful events, and the correct interpretation depends on domain context \cite{Aggarwal:2017}. They are therefore retained in the dataset and interpreted during evaluation instead of being removed mechanically. This decision preserves chronological continuity and keeps the forecasting problem aligned with actual macroeconomic behavior.
+
+\section{Anomalies}
+
+Anomalies represent structural breaks, such as the 2021--2023 inflationary surge. According to \cite{StockWatson1999}, such shocks can alter the future path of the series substantially. More generally, anomaly-detection literature defines anomalies as observations or temporal segments that deviate strongly from the normal pattern and therefore deserve special interpretation rather than automatic deletion \cite{Chandola:2009}. While ARIMA and SARIMA may struggle when the underlying regime changes \cite{Box2015}, the \textbf{ETS} framework can be more robust because its level component adapts more directly to changing baselines \cite{Hyndman2021}.

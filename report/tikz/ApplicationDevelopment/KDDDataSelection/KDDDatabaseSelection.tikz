@@ -1,0 +1,29 @@
+\begin{tikzpicture}[
+    node distance=1.8cm,
+    process/.style={
+        rectangle,
+        rounded corners=2pt,
+        draw=blue!60!black,
+        fill=blue!12,
+        minimum width=3.5cm,
+        minimum height=1.1cm,
+        align=center
+    },
+    decision/.style={
+        rectangle,
+        rounded corners=2pt,
+        draw=green!50!black,
+        fill=green!12,
+        minimum width=3.5cm,
+        minimum height=1.1cm,
+        align=center
+    },
+    arrow/.style={->, thick, draw=blue!60!black}
+]
+    \node[process] (database) {Database\\Destatis GENESIS\\Table 61111-0002};
+    \node[decision, right=of database] (selection) {Data Selection\\Monthly CPI\\Germany};
+    \node[process, right=of selection] (modeldata) {Modeling Dataset\\Date + CPI};
+
+    \draw[arrow] (database) -- (selection);
+    \draw[arrow] (selection) -- (modeldata);
+\end{tikzpicture}

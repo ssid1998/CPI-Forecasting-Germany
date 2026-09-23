@@ -1,0 +1,75 @@
+%%%%%%%%%%%%
+%
+% Installation and First Launch
+%
+%%%%%%%%%%%%
+
+\chapter{Installation and First Launch}
+\label{ch:installation-first-launch}
+
+This chapter explains how to prepare the software environment and start the CPI forecasting dashboard for normal use. The focus is the user-facing launch workflow, not the internal implementation of the forecasting pipeline.
+
+\section{Prerequisites}
+
+Before starting the dashboard, the user should ensure that the following are available:
+
+\begin{itemize}
+    \item Python 3 with virtual-environment support,
+    \item the repository folder including the \FILELOC{Code/} subdirectory,
+    \item internet access for the initial dependency installation,
+    \item a browser for opening the Streamlit dashboard.
+\end{itemize}
+
+\section{Folder Check Before Launch}
+
+The most important working folder is \FILELOC{Code/}. Before installation or launch, verify that the following items exist:
+
+\begin{enumerate}
+    \item \FILELOC{Code/requirements.txt}
+    \item \FILELOC{Code/run\_dashboard.bat} or \FILELOC{Code/run\_dashboard.sh}
+    \item \FILELOC{Code/saved\_models/}
+\end{enumerate}
+
+If the saved model files are missing, the dashboard may still start but will not be able to display the expected forecasts. In that case, the issue should be treated as a maintainer-side problem and reported through the support process.
+
+\section{Normal Installation Sequence}
+
+\subsection{Windows}
+
+For Windows users, the recommended first-run sequence is:
+
+\begin{enumerate}
+    \item open the \FILELOC{Code/} folder,
+    \item run \SHELL{setup\_env.bat},
+    \item after installation completes, run \SHELL{run\_dashboard.bat}.
+\end{enumerate}
+
+\subsection{macOS / Linux}
+
+For macOS or Linux users, the recommended first-run sequence is:
+
+\begin{enumerate}
+    \item open a terminal in \FILELOC{Code/},
+    \item run \SHELL{./setup\_env.sh},
+    \item after installation completes, run \SHELL{./run\_dashboard.sh}.
+\end{enumerate}
+
+\section{Alternative Start Command}
+
+The repository also provides \FILELOC{start.bat} and \FILELOC{start.sh}. These scripts are useful when the full environment and dashboard startup should be executed in one sequence. However, for normal day-to-day usage, the dedicated dashboard start scripts are easier to understand and are therefore preferred in this manual.
+
+\section{Expected First Launch Result}
+
+After a successful launch, Streamlit prints a local address in the terminal. Open that address in a browser. The first screen should show:
+
+\begin{itemize}
+    \item the dashboard title,
+    \item the configuration sidebar,
+    \item forecast metrics,
+    \item a forecast graph,
+    \item explanatory sections below the main chart.
+\end{itemize}
+
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title=Important Usage Note]
+Normal users should \textbf{not} update the raw CPI file, retrain the forecasting models, or edit Python modules just to use the dashboard. If such actions become necessary, the issue belongs to a maintainer and should be handled through the support process described later in this manual.
+\end{tcolorbox}

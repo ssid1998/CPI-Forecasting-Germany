@@ -1,0 +1,11 @@
+\begin{tikzpicture}[node distance=1.2cm, auto, every node/.style={rectangle, draw, rounded corners, fill=blue!10, minimum width=5cm, minimum height=1cm, align=center}, >=stealth']
+    \node (start) {Start Streamlit application};
+    \node (load) [below=of start] {Load data and saved models};
+    \node (select) [below=of load] {User selects model and CI level};
+    \node (predict) [below=of select] {Generate forecasts and metrics};
+    \node (render) [below=of predict] {Render chart, table, and explanations};
+    \draw [->, thick] (start) -- (load);
+    \draw [->, thick] (load) -- (select);
+    \draw [->, thick] (select) -- (predict);
+    \draw [->, thick] (predict) -- (render);
+\end{tikzpicture}

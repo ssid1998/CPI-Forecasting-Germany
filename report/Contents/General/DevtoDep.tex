@@ -1,0 +1,106 @@
+%%%
+%
+% $Autor: Gargi Barve $
+% $Date: 2024-10-31 11:15:45Z $
+% $File: file.tex $
+% $Version: 2 $
+%
+% Project: BA26-04 Time Series Forecasting CPI Germany
+%
+%%%
+
+\chapter{Development to Deployment}
+
+\section{Data Structure}
+
+The CPI forecasting project passes several artifact types from development into deployment. The workflow begins with the raw CSV export from Destatis, converts it into a cleaned \texttt{pandas} dataframe, uses that dataframe to train forecasting models, and then produces serialized model objects, plots, and evaluation tables. This staged transformation is important because the Streamlit application does not retrain the models; it consumes outputs already generated during development.
+
+\section{Tools}
+
+The main tools used in this transition are Python, \texttt{pandas}, \texttt{statsmodels}, \texttt{scikit-learn}, \texttt{joblib}, \texttt{matplotlib}, \texttt{plotly}, and \texttt{streamlit}. Each tool has a specific role: data handling, model estimation, evaluation, serialization, visualization, and deployment. LaTeX then documents the resulting workflow and findings in report form.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Artifacts transferred from development to deployment.}
+	\label{tab:dev-to-dep-artifacts}
+	\begin{tabular}{p{3cm}p{2cm}p{3.5cm}p{4cm}}
+		\hline
+		Artifact & Format & Produced by & Used by \\
+		\hline
+		CPI dataset & CSV & External source / data loading stage & Modeling pipeline and app \\
+		Forecast plots & PNG & EDA and modeling pipeline & Report \\
+		Trained models & JOBLIB & Modeling pipeline & Streamlit app \\
+		Report content & TEX & Authors & LaTeX build system \\
+		\hline
+	\end{tabular}
+\end{table}
+
+\section{File Structure for Model Exchange}
+
+The model handoff between development and deployment is organized through \texttt{Code/saved\_models/}. During development, \texttt{Code/src/modeling\_pipeline.py} trains ARIMA, ETS, and SARIMA and writes their fitted wrappers to disk with deterministic filenames. During deployment, \texttt{Code/app.py} reads these files again with \texttt{joblib.load()} and uses them to generate forecasts without refitting the models.
+
+The relevant filenames are:
+
+\begin{itemize}
+	\item \texttt{ARIMA\_1\_1\_1.joblib}
+	\item \texttt{ETS\_A\_A\_A.joblib}
+	\item \texttt{SARIMA\_1\_1\_1x1\_1\_1\_12.joblib}
+\end{itemize}
+
+\section{Description of the File Types}
+
+The project uses several file types in the development-to-deployment transition:
+
+\begin{itemize}
+	\item \textbf{CSV} for the raw CPI input data.
+	\item \textbf{PNG} for exported plots such as decomposition and forecast comparison figures.
+	\item \textbf{JOBLIB} for serialized trained model objects.
+	\item \textbf{PY} for executable pipeline and dashboard code.
+	\item \textbf{TEX} for report documentation and academic presentation.
+\end{itemize}
+
+\section{Saving Models}
+
+After fitting each model, the modeling pipeline serializes it with \texttt{joblib.dump()}. This is a key transition step because it preserves the trained model state and makes it available to the dashboard layer. Without serialization, the app would need to refit the models every time it starts, which would be inefficient and would blur the separation between development and deployment.
+
+\section{Loading Models}
+
+The deployment side reverses this process. \texttt{Code/app.py} maps the user-selected model name to a filename, loads the corresponding object from \texttt{Code/saved\_models/}, and uses it to generate predictions and confidence intervals. If a file is missing, the app reports the issue to the user instead of silently failing.
+
+\begin{figure}[htbp]
+	\centering
+	\input{../../tikz/DevelopmentToDeployment/DevToDep/DevelopmentToDeploymentFlow.tikz}
+	\caption{Transition of trained forecasting models from development to deployment.}
+	\label{fig:dev-to-dep-flow}
+\end{figure}
+
+\section{Deployed Dashboard}
+
+The deployment layer is implemented as a Streamlit web application. Figure~\ref{fig:devdep-dashboard-live-arima} shows the complete live dashboard interface, including the sidebar configuration panel and the main content area. The dashboard allows users to select a forecasting model, adjust the confidence interval level, and inspect both forecast curves and evaluation metrics interactively.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.95\textwidth]{dashboard_live_arima.png}
+	\caption{Live Streamlit dashboard in the ARIMA view, showing the model selector, confidence interval control, metric cards, and forecast chart with a 95\% confidence interval.}
+	\label{fig:devdep-dashboard-live-arima}
+\end{figure}
+
+Figure~\ref{fig:devdep-dashboard-live-dropdown} documents the expanded model selector. Users can choose between individual models (ARIMA, ETS, SARIMA) or a comparison mode that displays all three models simultaneously. The confidence interval selector allows the user to adjust the uncertainty level from 80\% to 99\%.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.75\textwidth]{dashboard_live_dropdown.png}
+	\caption{Expanded model selector in the live dashboard, showing the three individual model views and the all-model comparison mode.}
+	\label{fig:devdep-dashboard-live-dropdown}
+\end{figure}
+
+Figure~\ref{fig:devdep-dashboard-live-compare} shows the main chart area in comparison mode. The interactive Plotly chart displays the recent training data, the actual test CPI values, and the forecast curves for all three models. Users can hover over data points to inspect exact values and dates.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.95\textwidth]{dashboard_live_compare_all.png}
+	\caption{Live comparison mode showing the metrics table and the forecast curves for ARIMA, ETS, and SARIMA against the actual test data.}
+	\label{fig:devdep-dashboard-live-compare}
+\end{figure}
+
+These screenshots demonstrate that the deployment layer successfully transforms the offline modeling results into an interactive, user-facing application. The dashboard does not merely display static images; it reloads the serialized models, recomputes forecasts and metrics, and renders interactive visualizations that support exploration and interpretation.

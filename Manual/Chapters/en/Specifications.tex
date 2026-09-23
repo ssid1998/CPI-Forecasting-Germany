@@ -1,0 +1,117 @@
+%%%%%%%%%%%%
+%
+% $Autor: Wings $
+% $Datum: 2019-03-05 08:03:15Z $
+% $Pfad: Specifications.tex $
+% $Version: 4250 $
+% !TeX spellcheck = en_GB/de_DE
+% !TeX encoding = utf8
+% !TeX root = ../../CPIManual
+%
+%%%%%%%%%%%%
+
+\chapter{Specifications}
+
+This chapter records the supported operating assumptions of the current dashboard release. It is intended as a compact technical reference for users who want to understand the scope of the application without reading backend source code.
+
+\section{System Scope}
+
+The application supports one forecasting use case: monthly CPI forecasting for Germany using the Destatis table \texttt{61111-0002}. The data is used as a univariate time series, and the implemented model inventory consists of ARIMA \texttt{(1,1,1)}, ETS \texttt{(A,A,A)}, and SARIMA \texttt{(1,1,1)$\times$(1,1,1,12)}.
+
+\section{Input Specification}
+
+\begin{itemize}
+    \item \textbf{Primary input file:} \FILELOC{Code/data/61111-0002\_en.csv}
+    \item \textbf{Expected frequency:} monthly
+    \item \textbf{Expected target variable:} CPI index value with base year 2020=100
+    \item \textbf{Observed usable date range in the current file:} January 1991 to February 2026
+    \item \textbf{Usable observations after dropping future placeholders:} 422 monthly values
+\end{itemize}
+
+The data loader removes future placeholder entries such as \texttt{...}, maps month names to numeric values, and enforces a strict month-start frequency.
+
+\section{Output Specification}
+
+For normal dashboard use, the following prepared artifacts are expected to be present.
+
+\begin{itemize}
+    \item Serialized model files in \FILELOC{Code/saved\_models/}
+    \item Plot images in \FILELOC{Code/plots/}
+    \item Evaluation metrics in \FILELOC{Code/plots/evaluation\_metrics.csv}
+    \item A LaTeX version of the metrics table in \FILELOC{Code/plots/evaluation\_metrics.tex}
+\end{itemize}
+
+\section{Supported User Controls}
+
+The dashboard currently supports the following interactive controls and user actions.
+
+\begin{itemize}
+    \item single-model selection
+    \item all-model comparison mode
+    \item confidence interval level selection from 80\% to 99\%
+    \item legend-based hiding and showing of plotted traces
+    \item plot download through the built-in chart toolbar
+\end{itemize}
+
+The forecast horizon is not user-configurable in the present implementation. It is fixed to the 24-month test window used in both the training pipeline and the dashboard logic.
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=Scope Reminder]
+This dashboard is intentionally focused on one dataset and three classical models. It does \textbf{not} support arbitrary datasets, custom forecast horizons, or real-time data feeds. If you need those capabilities, refer to the Add Ons chapter for planned extensions.
+\end{tcolorbox}
+
+\section{Dependency Inventory}
+
+The runtime dependencies declared in \FILELOC{Code/requirements.txt} are listed in Table~\ref{tab:manual-spec-deps}.
+
+\begin{table}[H]
+    \centering
+    \small
+    \setlength{\tabcolsep}{5pt}
+    \renewcommand{\arraystretch}{1.15}
+    \caption{Python dependencies required for operation.}
+    \label{tab:manual-spec-deps}
+    \begin{tabularx}{\textwidth}{|L{2.8cm}|X|}
+        \hline
+        \textbf{Package} & \textbf{Role in the project} \\
+        \hline
+        pandas & data loading, date parsing, indexing, and table handling \\
+        \hline
+        matplotlib & generation of saved forecast and decomposition plots \\
+        \hline
+        statsmodels & ARIMA, ETS, and SARIMA implementations \\
+        \hline
+        scikit-learn & RMSE, MAE, and MAPE evaluation metrics \\
+        \hline
+        jinja2 & dependency required by the current software environment \\
+        \hline
+        joblib & serialization and loading of trained model objects \\
+        \hline
+        streamlit & web application framework for the dashboard \\
+        \hline
+        plotly & interactive chart rendering in the dashboard \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+\section{Artifact Flow Specification}
+
+\begin{figure}[H]
+    \centering
+    \resizebox{0.95\textwidth}{!}{%
+    \begin{tikzpicture}[node distance=1.2cm, >=latex, every node/.style={font=\small}]
+        \tikzstyle{box}=[rectangle, rounded corners, draw=teal!60!black, fill=teal!10, align=center, text width=7.2cm, minimum height=0.9cm]
+        \node[box] (csv) {1. Raw Destatis CSV stored in \FILELOC{Code/data/}};
+        \node[box, below=of csv] (loader) {2. Data loader parses months, cleans values, and enforces monthly indexing};
+        \node[box, below=of loader] (train) {3. Modeling pipeline trains ARIMA, ETS, and SARIMA and evaluates them on the 24-month holdout};
+        \node[box, below left=1.25cm and 0.7cm of train] (artifacts) {4a. Save model artifacts, metrics, and plots};
+        \node[box, below right=1.25cm and 0.7cm of train] (app) {4b. Streamlit app loads the data and the saved artifacts for presentation};
+
+        \draw[->, thick] (csv) -- (loader);
+        \draw[->, thick] (loader) -- (train);
+        \draw[->, thick] (train) -- (artifacts);
+        \draw[->, thick] (train) -- (app);
+    \end{tikzpicture}%
+    }
+    \caption{Artifact flow from raw CPI data to the deployed dashboard.}
+    \label{fig:spec-artifact-flow}
+\end{figure}

@@ -1,0 +1,238 @@
+%%%
+%
+% $Autor: Siddhanth Sharma $
+% $Date: 2024-10-31 11:15:45Z $
+% $File: file.tex $
+% $Version: 2 $
+%
+% Project: BA26-04 Time Series Forecasting CPI Germany
+%
+%%%
+
+\chapter{Application Deployment}
+\label{ch:app-deployment}
+
+\section{Application Description}
+
+The deployed application is a Streamlit dashboard for interactive inspection of Germany's CPI forecasts. Its purpose is not to retrain models online, but to present the outputs of the offline forecasting pipeline in an accessible and reproducible way. Users can select a forecasting model, view actual and predicted CPI values, inspect confidence intervals, and compare evaluation metrics.
+
+This deployment choice matters for the project because it turns the forecasting work from a static script output into a reusable analytical interface. A report table is sufficient to document who won the model comparison, but it is less useful for understanding where forecasts diverge over time, how confidence intervals widen, or how the relative performance of the models appears visually on the same holdout period. The dashboard therefore functions as the user-facing endpoint of the project: it does not replace the underlying modeling pipeline, but it makes the results easier to inspect, demonstrate, and interpret.
+
+\section{Structure}
+
+The application is implemented in \texttt{Code/app.py}. Its structure consists of four main parts: page configuration and introductory text, sidebar controls, metric and plot display, and explanatory sections.
+
+\subsection{Sidebar Controls}
+
+The sidebar is the primary interaction panel. It contains two dropdown selectors:
+
+\begin{itemize}
+    \item \textbf{Select Model:} A dropdown menu offering four options:
+    \begin{itemize}
+        \item \texttt{ARIMA (1,1,1)} -- displays the ARIMA forecast with confidence intervals
+        \item \texttt{ETS (A,A,A)} -- displays the ETS forecast with confidence intervals
+        \item \texttt{SARIMA (1,1,1)x(1,1,1,12)} -- displays the SARIMA forecast with confidence intervals
+        \item \texttt{Compare All Models} -- overlays all three forecasts on the same chart for direct visual comparison
+    \end{itemize}
+    \item \textbf{Confidence Interval Level:} A dropdown allowing the user to select 80\%, 90\%, 95\%, 96\%, 97\%, 98\%, or 99\% confidence bands. The default is 95\%.
+\end{itemize}
+
+When the user selects an individual model, the dashboard loads the corresponding serialized \texttt{.joblib} file from \FILELOC{Code/saved\_models/}, regenerates the 24-step forecast, and displays the forecast curve together with the selected confidence band. When the user selects \texttt{Compare All Models}, the dashboard loads all three models simultaneously, computes their forecasts on the common test period, and renders an interactive Plotly chart with all forecast curves overlaid on the actual test data. This comparison mode is particularly useful because it allows the user to see immediately which model tracks the actual CPI path most closely.
+
+\subsection{Dashboard Runtime Stages}
+
+At a more detailed level, the dashboard separates responsibilities into a small number of understandable runtime stages:
+
+\begin{enumerate}
+    \item \textbf{Path resolution:} The application resolves paths relative to its own file location so that the CPI CSV and serialized models can be found reliably.
+    \item \textbf{Data loading:} It loads the preprocessed CPI series and applies the same chronological split that is used in the offline evaluation.
+    \item \textbf{Model mapping:} It maps the user-selected model name to the corresponding saved model artifact and generates forecasts and, where supported, confidence intervals.
+    \item \textbf{Metric computation:} It computes or recomputes the evaluation metrics shown to the user and passes the results to the plotting and layout layer.
+\end{enumerate}
+
+This structure is simple enough for a student project, but also modular enough that future deployment features could be added without rewriting the whole application.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Main deployment elements of the CPI dashboard.}
+    \label{tab:app-deployment-elements}
+    \begin{tabular}{p{4cm}p{8.5cm}}
+        \hline
+        Deployment element & Role in the application \\
+        \hline
+        CPI CSV file & Provides the time series used for comparison and plotting \\
+        Saved model files & Supply the forecasting backend for ARIMA, ETS, and SARIMA \\
+        Sidebar controls & Collect user input for model selection and interval level \\
+        Metrics section & Summarizes forecast accuracy numerically \\
+        Plotly chart & Visualizes actual and forecast CPI values interactively \\
+        \hline
+    \end{tabular}
+\end{table}
+
+\section{Idea}
+
+The main deployment idea is to separate modeling from presentation. Training and evaluation are performed once in the development pipeline, whereas the Streamlit app focuses on communicating the results. This improves usability because end users do not need to understand the internal forecasting scripts in order to inspect the outcomes.
+
+This separation also improves reproducibility. Because the app consumes already-defined data and model artifacts, a user who launches the dashboard sees results that are traceable back to the same underlying repository pipeline described in the report. The deployment layer is therefore intentionally thin: it does not silently retune models, alter the holdout horizon, or introduce a second evaluation method. Its role is to expose the already-established analytical logic through an interactive interface.
+
+\section{Flow Chart of Each Step in the Deployment}
+
+\begin{figure}[htbp]
+    \centering
+    \input{../../tikz/ApplicationDeployment/AppDeploymentFlow.tikz}
+    \caption{Deployment flow of the Streamlit CPI forecasting application.}
+    \label{fig:app-deployment-flow}
+\end{figure}
+
+\section{Dashboard Screenshots}
+
+The deployed Streamlit dashboard is shown in Figures~\ref{fig:app-dashboard-live-arima}--\ref{fig:app-dashboard-live-sarima}. These screenshots were captured from the running application on \texttt{localhost:8502} and illustrate the actual user interface that results from the deployment process described in this chapter.
+
+Figure~\ref{fig:app-dashboard-live-arima} shows the complete dashboard with the sidebar visible on the left and the main content area on the right. In this view, the user has selected \texttt{ARIMA (1,1,1)} from the model dropdown and \texttt{95\%} from the confidence interval dropdown. The main area displays the corresponding RMSE, MAE, and MAPE metric cards, followed by the interactive Plotly chart showing the ARIMA forecast with its 95\% confidence band overlaid on the actual test data.
+
+Figure~\ref{fig:app-dashboard-live-dropdown} provides a focused view of the model selector in its expanded state. The available choices are the three individual model views and \texttt{Compare All Models}. This confirms that the dashboard exposes both detailed single-model inspection and direct model comparison through one sidebar control.
+
+Figures~\ref{fig:app-dashboard-live-ets} and \ref{fig:app-dashboard-live-sarima} document the two additional single-model views. They are important deployment evidence because they show that the same loading, metric, and plotting branch works not only for ARIMA but also for ETS and SARIMA. Figure~\ref{fig:app-dashboard-live-compare} then shows the comparison mode, where the metric cards are replaced by a table and the chart overlays all three forecast curves.
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{dashboard_live_arima.png}
+    \caption{Live dashboard view for ARIMA \texttt{(1,1,1)}, including metric cards and the forecast chart with a 95\% confidence band.}
+    \label{fig:app-dashboard-live-arima}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.75\textwidth]{dashboard_live_dropdown.png}
+    \caption{Expanded model selector in the live dashboard, showing ARIMA, ETS, SARIMA, and the all-model comparison option.}
+    \label{fig:app-dashboard-live-dropdown}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{dashboard_live_ets.png}
+    \caption{Live dashboard view for ETS \texttt{(A,A,A)}, showing the lowest error metrics among the implemented models and the corresponding forecast chart.}
+    \label{fig:app-dashboard-live-ets}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{dashboard_live_sarima.png}
+    \caption{Live dashboard view for SARIMA \texttt{(1,1,1)$\times$(1,1,1,12)}, showing the seasonal model's metrics and forecast chart.}
+    \label{fig:app-dashboard-live-sarima}
+\end{figure}
+
+\begin{figure}[htbp]
+    \centering
+    \includegraphics[width=0.95\textwidth]{dashboard_live_compare_all.png}
+    \caption{Live comparison mode showing the metrics table and an overlaid forecast chart for ARIMA, ETS, and SARIMA.}
+    \label{fig:app-dashboard-live-compare}
+\end{figure}
+
+\subsection{Model Comparison Mode}
+
+When the user selects \texttt{Compare All Models} from the dropdown, the dashboard switches to comparison mode. In this mode, the sidebar remains the same, but the main area changes to display a metrics table highlighting the best-performing model and an interactive chart overlaying all three forecast curves on the same axes. This allows direct visual comparison of how ARIMA, ETS, and SARIMA diverge from the actual CPI path. The comparison mode is one of the most useful features of the dashboard because it makes the relative strengths and weaknesses of each model immediately visible without requiring the user to switch between individual model views manually.
+
+\section{ML Pipeline}
+
+The deployment layer consumes the outputs of the machine-learning pipeline rather than re-executing the full training stage. It uses the cleaned CPI series, the serialized model artifacts, and the metric logic already established in the development stage. This ensures consistency between the values shown in the dashboard and the values documented in the report.
+
+In KDD terms, the deployment chapter belongs after data selection, preprocessing, transformation, mining, and interpretation because it depends on the artifacts created there. The app requires a valid CPI data file, successfully trained \texttt{.joblib} models, and evaluation logic that is already known to be correct. This dependency chain should be made explicit because it explains why deployment cannot be treated as an isolated front-end exercise. If the saved models are missing or inconsistent with the current data file, the deployment layer will fail or display misleading results even if the user interface itself is implemented correctly.
+
+\section{Program Readability and Modules}
+
+The application code is reasonably readable because it separates configuration, data loading, model-file mapping, forecast generation, and explanatory text into recognizable blocks. The path handling is more robust than in some of the training scripts because \texttt{app.py} resolves its main directories relative to its own file location.
+
+This readability is relevant to deployment quality because a dashboard often becomes the part of a project that other people interact with most frequently. In \FILELOC{Code/app.py}, the visible configuration options, the loading logic, the metric computation, and the plotting code are still located in one file, but they are organized in a sufficiently clear order that future changes remain realistic. The current structure is therefore acceptable for the project scope, although a more production-oriented version would likely separate the user-interface layer from the forecasting-service layer even more explicitly.
+
+\section{Parameter Handling}
+
+The dashboard exposes only deployment-relevant parameters to the user. These are the model choice and the confidence-interval level. Forecast horizon and evaluation horizon remain fixed in the underlying application logic, which preserves comparability with the report results.
+
+This restricted parameter design is deliberate rather than accidental. Allowing the user to alter the model and uncertainty level supports meaningful interaction, while keeping the test horizon fixed protects the comparability of the results. If the app allowed arbitrary retraining windows or different evaluation horizons at runtime, the deployment view would no longer correspond directly to the report's documented evaluation setup. The current parameter handling therefore favors interpretability and reproducibility over unrestricted configurability.
+
+\section{Error and Message Handling}
+
+If model files are missing, the application shows a visible error message and instructs the user to run the training pipeline first. If confidence intervals cannot be calculated, the app raises a warning instead of terminating the session. In addition, the interface uses spinners, metric descriptions, and expandable explanations to guide the user through the interpretation of the results.
+
+The deployment layer is therefore moderately robust, but not yet fully hardened. It handles several expected failure modes in a user-visible way, especially missing artifacts and interval-calculation problems. However, the app still depends on the surrounding file structure remaining stable and on the serialized models being compatible with the installed Python environment. This means that deployment robustness currently relies more on disciplined project maintenance than on a fully isolated packaging strategy. For the scope of this report, that limitation should be stated clearly rather than hidden.
+
+\section{Testing and Test Automation}
+
+The project includes a \texttt{pytest} test suite located in \FILELOC{Code/tests/}. The tests cover the data-loading layer, the model wrappers, and the monitoring workflow. Table~\ref{tab:test-suite-summary} summarizes the current test coverage.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Summary of the pytest test suite.}
+    \label{tab:test-suite-summary}
+    \begin{tabular}{p{4.5cm}p{8cm}}
+        \hline
+        \textbf{Test file} & \textbf{What it checks} \\
+        \hline
+        \texttt{test\_data\_loader.py} & CPI CSV loads correctly, index is monthly \texttt{MS}, no missing values, file-not-found error handling \\
+        \texttt{test\_models.py} & ARIMA, ETS, and SARIMA wrappers fit, predict, and return confidence intervals on synthetic data \\
+        \texttt{test\_monitoring\_workflow.py} & Monitoring script runs, baseline metrics are readable, drift detection triggers correctly \\
+        \texttt{test\_ets\_pred.py} & ETS model predictions match expected behavior \\
+        \texttt{test\_ets\_ci.py} & ETS confidence intervals are generated correctly \\
+        \texttt{test.py} & General sanity checks \\
+        \hline
+    \end{tabular}
+\end{table}
+
+The tests can be executed from the project root with the following command:
+
+\begin{Python}[caption={Running the pytest suite}, label={lst:run_pytest}]
+pytest Code/tests/
+\end{Python}
+
+At the time of writing, the test suite reports \textbf{10 passed} tests across the modules listed above. This indicates that the core data-loading and model-wrapper logic is protected by automated checks, which reduces the risk of silent regressions when the codebase is modified.
+
+\subsection{CI/CD Integration}
+
+While the project does not currently use a continuous-integration platform such as GitHub Actions or GitLab CI, the test suite is structured so that it could be integrated into one with minimal effort. A typical CI/CD workflow for this project would consist of the following steps:
+
+\begin{enumerate}
+    \item \textbf{Environment setup:} Install Python dependencies from \FILELOC{Code/requirements.txt}.
+    \item \textbf{Linting:} Run \texttt{flake8} or \texttt{ruff} to check code style and catch syntax issues.
+    \item \textbf{Unit tests:} Execute \texttt{pytest Code/tests/} to verify data loading, model fitting, and monitoring logic.
+    \item \textbf{Coverage check:} Use \texttt{coverage.py} to ensure that critical paths in \FILELOC{Code/src/} are exercised by the test suite.
+    \item \textbf{Pipeline execution:} Run \FILELOC{Code/src/modeling\_pipeline.py} to confirm that the full training and evaluation workflow completes without error.
+    \item \textbf{Artifact verification:} Check that \FILELOC{Code/saved\_models/} and \FILELOC{Code/plots/} contain the expected files after pipeline execution.
+\end{enumerate}
+
+Figure~\ref{fig:cicd-flow} shows a conceptual CI/CD pipeline that could be applied to this project. The diagram is not a description of the current setup, but rather a blueprint for how the existing tests and scripts could be orchestrated into an automated deployment workflow.
+
+\begin{figure}[htbp]
+    \centering
+    \begin{tikzpicture}[
+        node distance=1.2cm,
+        every node/.style={font=\small},
+        stage/.style={rectangle, draw=blue!60, fill=blue!5, minimum width=6cm, minimum height=0.9cm, align=center},
+        arrow/.style={->, thick}
+    ]
+        \node[stage] (env) {1. Install dependencies from \texttt{requirements.txt}};
+        \node[stage, below=of env] (lint) {2. Lint check (\texttt{flake8})};
+        \node[stage, below=of lint] (test) {3. Run pytest suite};
+        \node[stage, below=of test] (coverage) {4. Coverage report};
+        \node[stage, below=of coverage] (pipeline) {5. Execute modeling pipeline};
+        \node[stage, below=of pipeline] (artifact) {6. Verify saved models and plots};
+        
+        \draw[arrow] (env) -- (lint);
+        \draw[arrow] (lint) -- (test);
+        \draw[arrow] (test) -- (coverage);
+        \draw[arrow] (coverage) -- (pipeline);
+        \draw[arrow] (pipeline) -- (artifact);
+    \end{tikzpicture}
+    \caption{Conceptual CI/CD pipeline for the CPI forecasting project.}
+    \label{fig:cicd-flow}
+\end{figure}
+
+The absence of a live CI/CD pipeline is acknowledged as a current limitation. The project relies on manual execution of tests and scripts, which is acceptable for a student project but would need to be automated before the system could be described as production-ready. The test suite and the modular script structure are, however, deliberate preparatory steps in that direction.
+
+\section{Deployment Test Protocol}
+
+Formal automated application tests are still limited, but the deployment can be validated through a practical protocol: confirm that the saved model files exist, start Streamlit successfully, verify that each model can be loaded, and check that the dashboard renders charts and metrics without runtime failure.
+
+A more explicit deployment test protocol can be stated as follows. First, verify that the CPI CSV file and all expected model artifacts exist in their designated directories. Second, launch the dashboard from the intended working directory and confirm that the application starts without import or path errors. Third, test each model option individually and then the comparison mode so that every loading branch in \texttt{app.py} is exercised. Fourth, change the confidence-interval selector and verify that the chart updates without breaking the metric display. Fifth, compare at least one visible metric set against the offline evaluation outputs to confirm consistency. This protocol is still lightweight, but it provides a clearer bridge between development validation and practical deployment testing.
+
+Future automated deployment tests should focus on the most failure-prone paths. These include checking whether the saved models can be deserialized, whether the dashboard still renders when confidence intervals are unavailable, and whether key user-interface elements appear after launch. Such tests would strengthen the report's deployment section because they would transform the current manual validation process into a repeatable testable deployment workflow.

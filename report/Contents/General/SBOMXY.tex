@@ -1,0 +1,94 @@
+%%%
+%
+% $Autor: Wings $
+% $Datum: 2021-05-14 $
+% $Pfad:  $
+% $Dateiname: SBOM
+% $Version: 4620 $
+%
+% !TeX spellcheck = de_DE/GB
+% !TeX program = pdflatex
+% !BIB program = biber/bibtex
+% !TeX encoding = utf8
+%
+%%%
+
+
+
+
+\chapter{SBOM}
+
+%------------------------------------------------
+
+% SOFTWARE SECTION
+
+%------------------------------------------------
+
+\subsection{Software Bill of Materials}
+
+The software environment used in this project supports data preprocessing, time-series modelling, visualization, and reproducible experimentation. The tools listed below form the complete development environment used for implementing the CPI forecasting models.
+
+\begin{table}[h]
+	\centering
+	\begin{tabular}{|p{3cm}|p{7cm}|p{2cm}|p{2cm}|}
+		\hline
+		\textbf{Software} & \textbf{Description} & \textbf{Quantity} & \textbf{Price} \\ \hline
+		Visual Studio Code & Lightweight and extensible source code editor used for Python development, debugging, and project implementation. & 1 & Free \\ \hline
+		Python & Primary programming language used for data preprocessing, statistical modelling, and CPI forecasting implementation. & 1 & Free \\ \hline
+		Git & Distributed version control system used to track code changes and manage project versions. & 1 & Free \\ \hline
+		GitHub & Online platform used to host the project repository and maintain project documentation and version history. & 1 & Free \\ \hline
+		Python Libraries & Libraries including Pandas, NumPy, Matplotlib, Statsmodels, and Scikit-learn used for data processing, visualization, and forecasting models. & 1 & Free \\ \hline
+	\end{tabular}
+	\caption{Software Bill of Materials}
+\end{table}
+
+\subsection{Python Environment}
+
+Python is the primary programming language used in this project. It provides a large ecosystem of libraries for statistical modelling, machine learning, and data analysis.
+
+\begin{itemize}
+	\item Python Version: Python 3.11 or later
+	\item Package Manager: pip
+	\item Libraries Used:
+	\begin{itemize}
+		\item Pandas – Data manipulation and time-series handling
+		\item NumPy – Numerical computation
+		\item Matplotlib – Data visualization
+		\item Statsmodels – Implementation of ARIMA, SARIMA, and ETS forecasting models
+		\item Scikit-learn – Evaluation metrics and model validation
+	\end{itemize}
+\end{itemize}
+
+\subsection{Visual Studio Code (VS Code)}
+
+Visual Studio Code (VS Code) is used as the primary development environment for implementing the CPI forecasting models.
+
+\begin{enumerate}
+	
+	\item User Interface: VS Code provides a customizable interface that supports themes, layouts, and workspace configuration.
+	
+	\item Extensions and Marketplace: Extensions such as the Python extension and Git integration provide additional development tools and debugging support.
+	
+	\item Integrated Terminal: Developers can execute Python scripts and command-line operations directly within the editor.
+	
+	\item IntelliSense: Provides intelligent code completion, parameter hints, and syntax suggestions.
+	
+	\item Debugging Support: Enables breakpoints, variable inspection, and step-by-step execution of Python programs.
+	
+	\item Version Control Integration: Built-in Git integration allows efficient version control and code management.
+	
+\end{enumerate}
+
+\subsection{Version Control and Documentation}
+
+Version control is implemented using Git and GitHub. All project code, scripts, and configuration files are stored in a structured repository.
+
+The repository includes:
+
+\begin{itemize}
+	\item Source code for data preprocessing and forecasting models
+	\item Documentation describing the project setup and execution steps
+	\item Configuration files specifying software dependencies
+\end{itemize}
+
+This documentation ensures that the project environment can be reproduced and that the experiments and results can be verified by other researchers.

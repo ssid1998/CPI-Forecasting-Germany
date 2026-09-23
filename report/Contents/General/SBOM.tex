@@ -1,0 +1,166 @@
+%%%
+%
+% $Autor: Wings $
+% $Datum: 2021-05-14 $
+% $Pfad:  $
+% $Dateiname: SBOM
+% $Version: 4620 $
+%
+% !TeX spellcheck = de_DE/GB
+% !TeX program = pdflatex
+% !BIB program = biber/bibtex
+% !TeX encoding = utf8
+%
+%%%
+
+
+
+
+\chapter{SBOM}
+
+%------------------------------------------------
+
+% SOFTWARE SECTION
+
+%------------------------------------------------
+
+\subsection{Software Bill of Materials}
+
+The software environment used in this project supports data preprocessing, time-series modelling, visualization, and reproducible experimentation. The tools listed below form the complete development environment used for implementing the CPI forecasting models.
+
+\begin{table}[h]
+	
+	\centering
+	\begin{tabular}{|
+			>{\centering\arraybackslash}m{3cm}|
+			>{\raggedright\arraybackslash}m{7cm}|
+			>{\centering\arraybackslash}m{2cm}|
+			>{\centering\arraybackslash}m{2cm}|}
+		\hline
+		
+		\textbf{Software} & 
+		\textbf{Description} & 
+		\textbf{Quantity} & 
+		\textbf{Price} \\ 
+		\hline
+		
+		\makecell{\includegraphics[width=1.2cm]{../../Images/BOM_SBOM/VSCode.png}}  
+		& Lightweight and extensible source code editor used for Python development, debugging, and project implementation. 
+		& 1 & Free \\ 
+		\hline
+		
+		\makecell{\includegraphics[width=1.2cm]{../../Images/BOM_SBOM/Python.png}} 
+		& Primary programming language used for data preprocessing, statistical modelling, and CPI forecasting implementation. 
+		& 1 & Free \\ 
+		\hline
+		
+		\makecell{\includegraphics[width=1.5cm]{../../Images/BOM_SBOM/Git.png}} 
+		& Distributed version control system used to track code changes and manage project versions. 
+		& 1 & Free \\ 
+		\hline
+		
+		\makecell{\includegraphics[width=1.2cm]{../../Images/BOM_SBOM/Github.png}} 
+		& Online platform used to host the project repository and maintain project documentation and version history. 
+		& 1 & Free \\ 
+		\hline
+		
+		\makecell{\includegraphics[width=1.2cm]{../../Images/BOM_SBOM/SciKit_Learn.png}} 
+		& Libraries including Pandas, NumPy, Matplotlib, Statsmodels, and Scikit-learn used for data processing, visualization, and forecasting models. 
+		& 1 & Free \\ 
+		
+		\hline
+	\end{tabular}
+	
+	\caption{Software Bill of Materials}
+	
+\end{table}
+
+\subsection{Python Environment}
+
+Python is the primary programming language used in this project. It provides a large ecosystem of libraries for statistical modelling, machine learning, and data analysis.
+
+\begin{itemize}
+	\item Python Version: Python 3.11 or later
+	\item Package Manager: pip
+	\item Libraries Used:
+	\begin{itemize}
+		\item Pandas -- Data manipulation and time-series handling
+		\item NumPy -- Numerical computation
+		\item Matplotlib -- Data visualization
+		\item Statsmodels -- Implementation of ARIMA, SARIMA, and ETS forecasting models
+		\item Scikit-learn -- Evaluation metrics and model validation
+	\end{itemize}
+\end{itemize}
+
+\subsection{Project Dependencies}
+
+The complete set of Python dependencies is recorded in \FILELOC{Code/requirements.txt}. This file ensures that the software environment can be reproduced on any machine with a compatible Python installation. Listing~\ref{lst:requirements-txt} reproduces the current dependency list.
+
+\begin{Python}[caption={Project dependencies from \texttt{Code/requirements.txt}}, label={lst:requirements-txt}]
+pandas
+matplotlib
+statsmodels
+scikit-learn
+jinja2
+joblib
+streamlit
+plotly
+\end{Python}
+
+Table~\ref{tab:dependency-descriptions} provides a brief description of each dependency and its role in the CPI forecasting pipeline.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Description of Python dependencies used in the project.}
+	\label{tab:dependency-descriptions}
+	\begin{tabular}{p{2.5cm}p{10.5cm}}
+		\hline
+		\textbf{Package} & \textbf{Role in the project} \\
+		\hline
+		\texttt{pandas} & Data loading, cleaning, time-index construction, and CSV export \\
+		\texttt{matplotlib} & Static plot generation for EDA and forecast comparison \\
+		\texttt{statsmodels} & ARIMA, ETS, and SARIMA model estimation and forecasting \\
+		\texttt{scikit-learn} & RMSE, MAE, and MAPE evaluation metrics \\
+		\texttt{jinja2} & Templating engine (transitive dependency via pandas and plotly) \\
+		\texttt{joblib} & Serialization and deserialization of trained model objects \\
+		\texttt{streamlit} & Interactive dashboard deployment \\
+		\texttt{plotly} & Interactive chart rendering inside the dashboard \\
+		\hline
+	\end{tabular}
+\end{table}
+
+\textbf{Version pinning note:} The current \texttt{requirements.txt} does not specify exact version numbers. For maximum reproducibility, a production deployment would pin each package to a tested version (e.g., \texttt{pandas==2.1.0}). The current unpinned format is acceptable for a student project because it allows compatibility with the latest stable releases, but it means that future installations may use slightly different package versions than those originally tested.
+
+\subsection{Visual Studio Code (VS Code)}
+
+Visual Studio Code (VS Code) is used as the primary development environment for implementing the CPI forecasting models.
+
+\begin{enumerate}
+	
+	\item User Interface: VS Code provides a customizable interface that supports themes, layouts, and workspace configuration.
+	
+	\item Extensions and Marketplace: Extensions such as the Python extension and Git integration provide additional development tools and debugging support.
+	
+	\item Integrated Terminal: Developers can execute Python scripts and command-line operations directly within the editor.
+	
+	\item IntelliSense: Provides intelligent code completion, parameter hints, and syntax suggestions.
+	
+	\item Debugging Support: Enables breakpoints, variable inspection, and step-by-step execution of Python programs.
+	
+	\item Version Control Integration: Built-in Git integration allows efficient version control and code management.
+	
+\end{enumerate}
+
+\subsection{Version Control and Documentation}
+
+Version control is implemented using Git and GitHub. All project code, scripts, and configuration files are stored in a structured repository.
+
+The repository includes:
+
+\begin{itemize}
+	\item Source code for data preprocessing and forecasting models
+	\item Documentation describing the project setup and execution steps
+	\item Configuration files specifying software dependencies
+\end{itemize}
+
+This documentation ensures that the project environment can be reproduced and that the experiments and results can be verified by other researchers.

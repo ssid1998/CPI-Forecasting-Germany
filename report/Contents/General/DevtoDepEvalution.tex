@@ -1,0 +1,84 @@
+%%%
+%
+% $Autor: Nayan Chavan$
+% $Date: 2024-10-31 11:15:45Z $
+% $File: file.tex $
+% $Version: 2 $
+%
+% Project: BA26-04 Time Series Forecasting CPI Germany
+%
+%%%
+
+\chapter{Development to Deployment Evaluation}
+
+This chapter evaluates the forecasting results at the point where model development becomes a reusable deployment artifact. In other words, the question is not only whether the models can be trained, but whether the resulting forecasts are accurate enough to justify their presentation in the deployed dashboard. The evaluation stage therefore connects statistical model quality with the practical credibility of the final application.
+
+\subsection{Evaluation Method}
+
+\subsubsection{Concept}
+
+The evaluation phase asks a straightforward question: how accurately can the models forecast future values of the Consumer Price Index (CPI)? The goal is not only to produce forecasts, but also to compare how well each model captures the main temporal patterns in the historical CPI series, including trend, persistence, and possible seasonality.
+
+To answer this question, the predicted CPI values are compared with the actual observed CPI values. Forecast accuracy is then summarized using standard error metrics. This makes the comparison more objective and allows the performance of different forecasting approaches to be assessed under the same conditions \cite{Hyndman2021,Box2015}.
+
+\subsubsection{Application}
+
+The evaluation is conducted after the forecasting models have been trained on historical CPI data. To preserve the temporal structure of the dataset, a \textbf{chronological train--test split} is used instead of random sampling. This is essential in time-series forecasting, because a random split would mix past and future observations and would therefore produce an unrealistic estimate of model performance.
+
+In the implemented workflow, the final \textbf{24 months} of the cleaned CPI series are reserved as the \textbf{test period}, while all earlier observations are used for training. Each model is fitted on the training portion and then asked to forecast the same unseen horizon. This setup mirrors the real forecasting situation more closely, because future values are not available during model fitting.
+
+The following time-series forecasting models are evaluated:
+
+\begin{itemize}
+	\item \textbf{ARIMA (AutoRegressive Integrated Moving Average)} -- models temporal dependencies and trends after transforming the data to achieve stationarity.
+	\item \textbf{ETS (Error, Trend, Seasonality)} -- models level, trend, and seasonal components using exponential smoothing techniques.
+	\item \textbf{SARIMA (Seasonal ARIMA)} -- extends ARIMA by explicitly modeling seasonal structures in the time series.
+\end{itemize}
+
+After generating forecasts, the predicted CPI values are compared with the actual CPI values from the test dataset.
+
+The forecasting accuracy is measured using the following evaluation metrics:
+
+\begin{itemize}
+	\item \textbf{RMSE (Root Mean Squared Error)} -- measures the square root of the average squared difference between predicted and actual values. It penalizes larger errors more strongly.
+	\item \textbf{MAE (Mean Absolute Error)} -- calculates the average absolute difference between predicted and actual CPI values, providing a direct measure of average prediction error.
+	\item \textbf{MAPE (Mean Absolute Percentage Error)} -- expresses the prediction error as a percentage, allowing easier interpretation and comparison of forecasting performance.
+\end{itemize}
+
+These three metrics are used together because each captures a different aspect of forecast quality. RMSE reacts strongly to larger deviations and is therefore useful when occasional substantial forecast misses should be penalized clearly. MAE gives a more direct interpretation of average absolute error in CPI index points. MAPE complements both by expressing the error relative to the observed level of the series, which is especially helpful for communicating forecast quality to readers who may not immediately interpret raw CPI index-point deviations. The combined use of RMSE, MAE, and MAPE therefore supports a more balanced evaluation than any single metric alone.
+
+\subsubsection{Results}
+
+The evaluation results are summarized in Table~\ref{tab:evaluation-results-formatted}, which presents RMSE, MAE, and MAPE values for all three models on the common 24-month holdout period.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Evaluation metrics for the three forecasting models on the 24-month chronological holdout period. Source: own calculations based on Destatis GENESIS table 61111-0002 and the repository forecasting pipeline \cite{DestatisCPIQuality2023,DestatisCPIWeighting2023}.}
+	\label{tab:evaluation-results-formatted}
+	\begin{tabular}{lccc}
+		\hline
+		\textbf{Model} & \textbf{RMSE} & \textbf{MAE} & \textbf{MAPE (\%)} \\
+		\hline
+		ARIMA (1,1,1) & 1.3262 & 1.1088 & 0.9104 \\
+		ETS (A,A,A) & \textbf{0.7697} & \textbf{0.6453} & \textbf{0.5298} \\
+		SARIMA (1,1,1)(1,1,1)$_{12}$ & 1.1909 & 0.9956 & 0.8173 \\
+		\hline
+	\end{tabular}
+\end{table}
+
+The model that produces the \textbf{lowest error values} across these metrics is considered to provide the most accurate CPI forecasts for this test horizon. In addition to the numerical results, visual analysis is also included. Figure~\ref{fig:eval-test-forecast-comparison} shows a zoomed view of the 24-month test period with actual CPI values and the three model forecasts overlaid. This visualization makes it easier to see where each model diverges from the actual series and how the seasonal and trend patterns differ between ARIMA, ETS, and SARIMA.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.95\textwidth]{test_forecast_comparison.png}
+	\caption{Zoomed forecast comparison for the 24-month test period, showing actual CPI against ARIMA, ETS, and SARIMA predictions. Source: own visualization based on Destatis GENESIS table 61111-0002 and repository model outputs \cite{DestatisCPIQuality2023,DestatisCPIWeighting2023}.}
+	\label{fig:eval-test-forecast-comparison}
+\end{figure}
+
+In the implemented pipeline, the concrete results show that \textbf{ETS(A,A,A)} performs best on the 24-month hold-out period. The reported metrics are \textbf{RMSE = 0.7697}, \textbf{MAE = 0.6453}, and \textbf{MAPE = 0.5298\%}. For comparison, \textbf{ARIMA(1,1,1)} achieved \textbf{RMSE = 1.3262}, \textbf{MAE = 1.1088}, and \textbf{MAPE = 0.9104\%}, while \textbf{SARIMA(1,1,1)(1,1,1)$_{12}$} achieved \textbf{RMSE = 1.1909}, \textbf{MAE = 0.9956}, and \textbf{MAPE = 0.8173\%}. These results indicate that ETS provides the most accurate and most stable forecasts among the three tested models in the current implementation.
+
+This result is meaningful because the three models were not evaluated under different experimental conditions. The same CPI series, the same hold-out window, and the same metrics were used across the entire comparison. The lower ETS error values therefore suggest that, for the observed German CPI pattern in this implementation, smooth level-trend-seasonality modeling represents the recent holdout period better than the tested autoregressive alternatives. This does not prove that ETS will always dominate under every future inflation regime, but it does justify its stronger position within the current report and deployment view.
+
+At the same time, the evaluation should be interpreted with appropriate caution. The ranking is based on one fixed 24-month test window rather than on repeated rolling-origin experiments. The reported differences are therefore informative but not final in an absolute sense. A different evaluation window, especially one dominated by a different inflation regime, might narrow or widen the performance gap between the models. The current evaluation is thus strong enough for a comparative student project, but not yet exhaustive enough to settle the broader forecasting question under all possible future conditions.
+
+Through this evaluation process, it becomes possible to judge which forecasting approach best captures the observed structure of Germany's CPI series and therefore provides the most reliable short-term forecasts within the scope of this project.

@@ -1,0 +1,226 @@
+%%%
+%
+% $Autor: Nayan Chavan$
+% $Date: 2024-10-31 11:15:45Z $
+% $File: file.tex $
+% $Version: 2 $
+%
+% Project: BA26-04 Time Series Forecasting CPI Germany
+%
+%%%
+
+\chapter{Data Overview}
+\label{ch:data-overview}
+
+\section{Overview of the Selected Dataset}
+
+The project uses Germany's Consumer Price Index as a monthly univariate time series. The source is the Destatis GENESIS table \textbf{61111-0002}, which reports the Consumer Price Index for Germany by month. The repository stores the exported file as \texttt{Code/data/61111-0002\_en.csv}. The cleaned dataset used by the Python pipeline contains \textbf{422 observations} from \textbf{January 1991} to \textbf{February 2026}.
+
+The raw export includes more fields than the modeling task requires. In addition to CPI, it contains status columns and percentage changes compared with the previous month and the previous year's month. These additional fields are useful for human interpretation, but the implemented forecasting task keeps the model input intentionally simple: the date is used as the monthly time index and the CPI index level is used as the only target variable.
+
+\section{Modeling Frame}
+
+The final modeling frame is a two-part structure: a monthly \texttt{Date} index and one numeric \texttt{CPI} column. Table~\ref{tab:data-overview-columns} shows the final data representation used by the models.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Columns used in the final modeling frame.}
+	\label{tab:data-overview-columns}
+	\begin{tabular}{lll}
+		\hline
+		Column & Role & Description \\
+		\hline
+		\texttt{Date} & Time index & Monthly observation date, stored as a \texttt{DatetimeIndex} \\
+		\texttt{CPI} & Target variable & Consumer Price Index for Germany, base year 2020 = 100 \\
+		\hline
+	\end{tabular}
+\end{table}
+
+This structure is appropriate for ARIMA, ETS, and SARIMA because all three models require observations to be ordered in time. The strict monthly frequency also allows the software to forecast a fixed number of future months without ambiguity.
+
+\section{Observed Data Range}
+
+The CPI values in the cleaned data start at 60.5 in January 1991 and reach 123.1 in February 2026. The descriptive statistics in Table~\ref{tab:cpi-descriptive-statistics} give a compact overview of the cleaned series.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Descriptive statistics of the cleaned CPI series. Source: own calculations based on Destatis GENESIS table 61111-0002 \cite{DestatisCPIQuality2023,DestatisCPIWeighting2023}.}
+	\label{tab:cpi-descriptive-statistics}
+	\begin{tabular}{lr}
+		\hline
+		Statistic & CPI value \\
+		\hline
+		Number of observations & 422 \\
+		Minimum & 60.5 \\
+		First quartile & 74.8 \\
+		Median & 86.95 \\
+		Mean & 87.41 \\
+		Third quartile & 96.2 \\
+		Maximum & 123.1 \\
+		\hline
+	\end{tabular}
+\end{table}
+
+The increase from the minimum to the maximum reflects the long-run upward movement of the German price level. This property is central for the later modeling steps because models must either handle trend directly or transform the data so that the remaining series is closer to stationary.
+
+\section{Time Series Characteristics}
+
+The CPI series has three practically important characteristics. First, it has a clear long-term trend. CPI is an index of price levels, so it naturally tends to move upward over long periods when inflation is positive. Second, short-term fluctuations are visible around the trend. These fluctuations may come from energy prices, taxes, temporary policy effects, or other macroeconomic shocks. Third, the monthly frequency makes it reasonable to test for annual seasonal patterns with a seasonal period of 12.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.95\textwidth]{decomposition.png}
+	\caption{Decomposition of the CPI series into trend, seasonal, and residual components. The plot supports the interpretation of CPI as a structured time series rather than an independent sequence of observations. Source: own visualization based on Destatis GENESIS table 61111-0002 and additive decomposition of the cleaned series \cite{DestatisCPIQuality2023,DestatisCPIWeighting2023}.}
+	\label{fig:data-overview-decomposition}
+\end{figure}
+
+The decomposition plot is used as an exploratory tool. It does not prove that one model is best, but it helps justify why the project compares methods that can handle trend and seasonality in different ways.
+
+\section{Train-Test Perspective}
+
+The modeling pipeline uses a chronological holdout split. The final 24 monthly observations are reserved for testing, and all earlier observations are used for training. This split respects the fact that forecasting always predicts forward in time. A random split would mix past and future observations and would therefore overstate performance.
+
+The selected evaluation period is especially useful because it contains recent price-level behavior. This makes the test more realistic than evaluating only on older, more stable periods. At the same time, it makes the task more demanding, because recent inflation dynamics may differ from the smoother long-run pattern learned from earlier data.
+
+\section{Raw Export Format and Parsing}
+
+Understanding the raw CSV format is important because it explains why the preprocessing stage in \FILELOC{Code/src/data\_loader.py} is necessary. The Destatis export is not a simple two-column file; it contains metadata, structural formatting, and footer information that must be handled before the data can be used for modeling.
+
+\subsection{Sample Raw Record}
+
+Table~\ref{tab:raw-cpi-record} shows a sample of the raw CSV export as it appears in the repository before any cleaning. The sample illustrates the key structural features that the preprocessing function must address.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Sample rows from the raw Destatis CSV export (\texttt{61111-0002\_en.csv}). Source: Destatis GENESIS table 61111-0002 \cite{DestatisCPIQuality2023,DestatisCPIWeighting2023}.}
+	\label{tab:raw-cpi-record}
+	\begin{tabular}{lllllll}
+		\hline
+		Year & Month & CPI & Status\_CPI & YoY & Status\_YoY & MoM \\
+		\hline
+		1991 & January & 60.5 & e & . & & . \\
+		 & February & 60.8 & e & . & & 0.5 \\
+		 & March & 60.8 & e & . & & - \\
+		 & April & 61.0 & e & . & & 0.3 \\
+		1992 & January & 63.9 & e & 5.6 & e & 0.6 \\
+		\hline
+	\end{tabular}
+\end{table}
+
+The sample reveals several parsing challenges:
+
+\begin{itemize}
+	\item \textbf{Metadata rows:} The first six lines contain table titles and column headers, not data.
+	\item \textbf{Year forwarding:} The year is printed only on the January row; subsequent months have an empty year field that must be forward-filled.
+	\item \textbf{Semicolon delimiter:} The file uses semicolons rather than commas as field separators.
+	\item \textbf{Missing-value markers:} Unavailable values are marked with \texttt{.} or \texttt{...}, and month-on-month changes may be shown as \texttt{-}.
+	\item \textbf{Footer content:} The file ends with copyright and creation-date lines that must be excluded.
+\end{itemize}
+
+These characteristics are typical of official statistical exports. They are not errors, but they do require a dedicated parsing routine before the data can be treated as a clean time series.
+
+\subsection{Format Properties}
+
+The raw dataset has the following format properties:
+
+\begin{itemize}
+	\item \textbf{File type:} CSV with semicolon-separated values.
+	\item \textbf{Encoding:} UTF-8 with BOM signature, handled by \texttt{encoding='utf-8-sig'} in the loader.
+	\item \textbf{Header rows:} Six lines of metadata and column descriptions before the data begins.
+	\item \textbf{Temporal coverage:} 1991 to 2026 in the raw file, with future months marked as unavailable.
+	\item \textbf{Columns present:} Year, Month, CPI (2020=100), Status\_CPI, YoY change, Status\_YoY, MoM change, Status\_MoM.
+\end{itemize}
+
+Only the Year, Month, and CPI columns are retained for modeling. The percentage-change columns are available for human reference but are not used as model inputs because the project is intentionally univariate.
+
+\section{Data Quality Dimensions}
+
+Data quality is a critical determinant of forecasting accuracy. Because the CPI series comes from an official statistical source, many quality dimensions are strong by design, but they still deserve explicit documentation. Table~\ref{tab:data-quality-dimensions} evaluates the dataset across nine standard data-quality dimensions.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Data quality dimensions for the German CPI dataset.}
+	\label{tab:data-quality-dimensions}
+	\begin{tabular}{llp{7.5cm}}
+		\hline
+		\textbf{Dimension} & \textbf{Status} & \textbf{Comments} \\
+		\hline
+		Completeness & Complete & No missing CPI values after unavailable future rows are removed. \\
+		Consistency & High & Uniform monthly frequency and chronological ordering. \\
+		Accuracy & High & Official Destatis publication with documented methodology. \\
+		Duplicates & None & Each month appears exactly once in the cleaned series. \\
+		Noise & Minimal & No typographical errors or formatting inconsistencies. \\
+		Freshness & Current & Includes data up to February 2026 at the time of export. \\
+		Anomalies & Expected & Structural breaks (e.g., post-2021 inflation surge) are real economic events. \\
+		Encoding & Clean & UTF-8 encoded; special characters handled correctly. \\
+		Relevance & Strong & CPI is the standard measure of consumer price inflation in Germany. \\
+		\hline
+	\end{tabular}
+\end{table}
+
+The high quality of the source data is one reason why the project can focus on modeling and evaluation rather than on extensive cleaning. The main preprocessing tasks are structural (parsing the export format) rather than corrective (fixing errors or imputing missing values).
+
+\section{Fairness and Bias}
+
+Fairness and bias are usually discussed in the context of personal data, but they are also relevant for macroeconomic indicators. The German CPI is an aggregate measure, and aggregation can mask important distributional differences. Table~\ref{tab:fairness-bias-cpi} identifies the main bias dimensions that affect the interpretation of CPI forecasts in this project.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Fairness and bias evaluation for the German CPI dataset.}
+	\label{tab:fairness-bias-cpi}
+	\begin{tabular}{llp{6.5cm}}
+		\hline
+		\textbf{Bias dimension} & \textbf{Detected?} & \textbf{Notes} \\
+		\hline
+		Geographic bias & Partial & National aggregate only; no regional CPI variation. \\
+		Demographic bias & Partial & Aggregate index may not reflect consumption patterns of specific income groups. \\
+		Temporal bias & Yes & Methodological changes in CPI construction over the observed period. \\
+		Product-category bias & Partial & Different product categories receive different weights, which are revised periodically. \\
+		Structural bias & Low & Official source with transparent methodology, but base-year revisions affect comparability. \\
+		\hline
+	\end{tabular}
+\end{table}
+
+These biases do not invalidate the forecasting task, but they do limit how the results should be interpreted. A forecast of the national CPI level does not necessarily predict the price experience of any specific household, region, or consumption basket. This is a standard limitation of aggregate macroeconomic forecasting and should be kept in mind when applying the results.
+
+\section{Quantity and Sufficiency}
+
+The quantity of data is sufficient for the chosen modeling approach. Table~\ref{tab:quantity-tradeoffs} summarizes the strengths and limitations of the dataset size.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Quantity trade-offs for the German CPI dataset.}
+	\label{tab:quantity-tradeoffs}
+	\begin{tabular}{p{6.5cm}p{6.5cm}}
+		\hline
+		\textbf{Strengths} & \textbf{Limitations} \\
+		\hline
+		422 observations exceed the minimum required for classical time-series models (typically $N > 50$). & Univariate only; no explanatory variables beyond past CPI values. \\
+		Covers multiple inflation regimes, including low-inflation and high-inflation periods. & Only one country; results may not generalize to other economies. \\
+		Monthly frequency supports yearly seasonal analysis with period 12. & Uneven economic shocks across periods may make some sub-periods harder to model. \\
+		No missing values after cleaning; no interpolation required. & Recent structural changes (post-2021) may not be well represented by models trained on earlier data. \\
+		\hline
+	\end{tabular}
+\end{table}
+
+The 24-month holdout period leaves 398 observations for training. This is more than adequate for estimating the parameters of ARIMA(1,1,1), ETS(A,A,A), and SARIMA(1,1,1)(1,1,1)$_{12}$. The long history also means that the models can learn from multiple business cycles and inflation regimes, which improves the robustness of the comparison.
+
+\section{Data Types}
+
+The cleaned dataset contains two data types: a temporal index and a numeric target. Table~\ref{tab:cpi-data-types} documents these types and their roles in the modeling pipeline.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Data types in the cleaned CPI dataset.}
+	\label{tab:cpi-data-types}
+	\begin{tabular}{llll}
+		\hline
+		\textbf{Field} & \textbf{Type} & \textbf{Description} & \textbf{Modeling role} \\
+		\hline
+		Date & Temporal (monthly) & Monthly observation date & Time index for forecasting \\
+		CPI & Numeric (float) & Consumer price index level & Target variable for prediction \\
+		\hline
+	\end{tabular}
+\end{table}
+
+The temporal index is converted to a \texttt{DatetimeIndex} with monthly-start frequency (\texttt{MS}) during preprocessing. This frequency is explicitly recognized by \textbf{statsmodels} and is used to interpret forecast horizons in calendar time rather than in abstract steps.

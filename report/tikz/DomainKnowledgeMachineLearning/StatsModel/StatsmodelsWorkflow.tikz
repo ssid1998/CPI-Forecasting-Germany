@@ -1,0 +1,13 @@
+\begin{tikzpicture}[
+    block/.style={rectangle, draw, fill=blue!10, text width=9em, text centered, rounded corners, minimum height=4em},
+    line/.style={draw, -latex, thick}
+]
+    \node [block] (series) at (0,0) {Clean CPI series};
+    \node [block] (models) at (4.5,0) {statsmodels classes\\ARIMA / ETS / SARIMA};
+    \node [block] (fit) at (9,0) {Fit and forecast\\through wrappers};
+    \node [block] (out) at (13.5,0) {Predictions and\\confidence intervals};
+
+    \draw [line] (series) -- (models);
+    \draw [line] (models) -- (fit);
+    \draw [line] (fit) -- (out);
+\end{tikzpicture}

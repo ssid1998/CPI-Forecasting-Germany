@@ -1,0 +1,12 @@
+\begin{tikzpicture}[node distance=1.2cm, auto, every node/.style={rectangle, draw, rounded corners, fill=blue!10, minimum width=5cm, minimum height=1cm, align=center}, >=stealth']
+    \node (raw) {Raw CPI CSV};
+    \node (clean) [below=of raw] {Cleaned monthly CPI series};
+    \node (train) [below=of clean] {Forecast model training};
+    \node (metrics) [below=of train] {Metrics, plots, and saved models};
+    \node (deploy) [below=of metrics] {Streamlit presentation layer};
+    
+    \draw [->, thick] (raw) -- (clean);
+    \draw [->, thick] (clean) -- (train);
+    \draw [->, thick] (train) -- (metrics);
+    \draw [->, thick] (metrics) -- (deploy);
+\end{tikzpicture}

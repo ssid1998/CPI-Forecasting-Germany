@@ -1,0 +1,121 @@
+%%%%%%%%%%%%
+%
+% Functions and Features
+%
+%%%%%%%%%%%%
+
+\chapter{Functions and Features}
+\label{ch:functions}
+
+This chapter explains what the user can do with the dashboard after it has started successfully. The focus is the visible behaviour of the application rather than the internal implementation of the forecasting models.
+
+\section{Select a Single Model}
+
+The main user action is the model selector in the sidebar. The user can choose:
+
+\begin{itemize}
+    \item \texttt{ARIMA (1,1,1)}
+    \item \texttt{ETS (A,A,A)}
+    \item \texttt{SARIMA (1,1,1)x(1,1,1,12)}
+\end{itemize}
+
+When one of these options is selected, the dashboard displays:
+
+\begin{itemize}
+    \item three metric cards (RMSE, MAE, MAPE),
+    \item one forecast chart,
+    \item one confidence interval band,
+    \item one legend describing the plotted lines.
+\end{itemize}
+
+This mode is useful when the user wants to inspect one forecast method in detail.
+
+\section{Compare All Models}
+
+The option \texttt{Compare All Models} changes the dashboard into comparison mode. In that mode, the application shows:
+
+\begin{itemize}
+    \item a table with one row per model,
+    \item an overlaid chart containing all three forecast curves,
+    \item the actual test data for direct visual comparison.
+\end{itemize}
+
+This is the fastest way to see how differently the models behave on the same test period.
+
+\section{Adjust the Confidence Interval Level}
+
+For single-model views, the confidence interval selector allows the user to choose values from 80\% to 99\%. The selected value changes the width of the uncertainty band shown around the forecast line.
+
+\begin{itemize}
+    \item A lower percentage produces a narrower band.
+    \item A higher percentage produces a wider band.
+\end{itemize}
+
+This function changes the visual uncertainty display, but it does not retrain the model.
+
+\section{Use the Interactive Chart}
+
+The main chart supports several interactive actions that are useful during interpretation:
+
+\begin{itemize}
+    \item hover over plotted values to inspect exact points,
+    \item zoom into the chart,
+    \item pan across the visible region,
+    \item reset the chart to its default view,
+    \item open the chart in fullscreen mode.
+\end{itemize}
+
+\section{Use the Legend}
+
+The legend on the right side of the chart is not only descriptive; it is also interactive.
+
+\begin{itemize}
+    \item Clicking a legend item hides the corresponding trace.
+    \item Clicking the same item again shows the trace again.
+    \item This allows the user to simplify the chart visually when multiple lines overlap.
+\end{itemize}
+
+This is especially useful in comparison mode, where the user may want to focus on only one or two forecasts at a time.
+
+\section{Download the Graph}
+
+The Plotly toolbar includes a download option labeled \textit{Download plot as a PNG}. This allows the user to export the currently visible graph as an image for presentation or documentation purposes.
+
+The exported file reflects the current visible state of the graph. If traces were hidden through the legend or the chart was zoomed before export, the downloaded image follows that visible state.
+
+\section{Read Metrics and Chart Together}
+
+The dashboard is designed so that numerical interpretation and visual interpretation support each other:
+
+\begin{itemize}
+    \item the metric values summarize overall forecast quality,
+    \item the chart reveals where that quality was strong or weak across time,
+    \item the confidence interval adds a visible uncertainty range.
+\end{itemize}
+
+The user should therefore avoid reading the metrics in isolation. A low average error is useful, but the chart is still necessary to understand whether a model missed seasonal patterns or diverged late in the forecast horizon.
+
+\section{Use the Embedded Explanations}
+
+The lower part of the dashboard contains expandable explanation panels. These panels help users understand:
+
+\begin{itemize}
+    \item how the training and test split works,
+    \item what confidence intervals mean,
+    \item how RMSE, MAE, and MAPE should be interpreted,
+    \item why the compared models may behave differently.
+\end{itemize}
+
+\section{Practical Interpretation Rules}
+
+To avoid misuse, the user should keep the following rules in mind:
+
+\begin{tcolorbox}[colback=orange!5!white, colframe=orange!75!black, title=Interpretation Cheat Sheet]
+\begin{enumerate}
+    \item \textbf{Lower RMSE / MAE / MAPE} = better forecast accuracy
+    \item \textbf{Wider confidence interval} = more conservative uncertainty, not better performance
+    \item \textbf{Dashboard purpose:} analytical comparison, not an official macroeconomic forecast
+    \item \textbf{Comparison mode:} best for seeing which model wins overall
+    \item \textbf{Single-model mode:} best for inspecting one model's behaviour in detail
+\end{enumerate}
+\end{tcolorbox}

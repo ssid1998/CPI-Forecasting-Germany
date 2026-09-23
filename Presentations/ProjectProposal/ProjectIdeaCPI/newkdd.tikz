@@ -1,0 +1,88 @@
+ \centering
+    % === Diagram style definitions ===
+    % mainblock  = default workflow block
+    % dbblock    = database/source block
+    % mineblock  = data mining block
+    % modelblock = deployment blocks (new data / inference / results)
+    % evalblock  = evaluation block
+    % flow       = solid arrow
+    % lineflow   = plain line used in feedback path routing
+    \tikzstyle{mainblock} = [rectangle, rounded corners=2pt, minimum width=2.55cm, minimum height=1.15cm, text centered, align=center, draw=HSELblau, fill=blue!18]
+    \tikzstyle{dbblock} = [mainblock, fill=red!18]
+    \tikzstyle{mineblock} = [mainblock, fill=green!22]
+    \tikzstyle{modelblock} = [mainblock, fill=yellow!22]
+    \tikzstyle{evalblock} = [mainblock, minimum width=3.0cm, minimum height=1.05cm, fill=blue!18]
+    \tikzstyle{flow} = [->, >=stealth, draw=HSELblau]
+    \tikzstyle{lineflow} = [-, >=stealth, draw=HSELblau]
+    \begin{tikzpicture}[scale=0.53, every node/.style={transform shape}]
+        % ==============================================================
+        % OUTER FRAMES
+        % Syntax: (left,bottom) rectangle (right,top)
+        % - increase horizontal length -> increase right x OR decrease left x
+        % - reduce horizontal length    -> decrease right x OR increase left x
+        % - increase downward depth     -> decrease bottom y
+        % - reduce downward depth       -> increase bottom y
+        % - increase upward height      -> increase top y
+        % ==============================================================
+        % Deployment outer frame
+        \draw[draw=HSELblau, line width=0.5pt] (-1.8,1.3) rectangle (18.3,5.0);
+        % Development outer frame
+        \draw[draw=HSELblau, line width=0.5pt] (-1.8,-3.8) rectangle (18.3,1.0);
+
+        % Monitoring highlight area inside the deployment frame
+        % Same rectangle rules as above. Lower the first y-value to make it taller downward.
+        \fill[HSELhellblau!35] (6.0,2.0) rectangle (17.8,4.55);
+        \draw[draw=HSELblau, line width=0.5pt] (6.0,2.0) rectangle (17.8,4.55);
+
+        % Monitoring title position: (x,y) = (left/right, down/up)
+        \node[font=\small\bfseries, text=HSELblau] at (12.0,4.15) {Monitoring};
+
+        % ==============================================================
+        % TOP / DEPLOYMENT BLOCKS
+        % Move blocks horizontally by changing x.
+        % Move blocks vertically by changing y.
+        % Keep inference x = mining x for a straight vertical connector.
+        % ==============================================================
+        \node (db) [dbblock] at (0,3.25) {Database\\(Destatis CPI)};
+        \node (newdata) [modelblock] at (8.0,3.25) {New Data};
+        \node (inference) [modelblock] at (12.0,3.25) {Model,\\Inference};
+        \node (results) [modelblock] at (16.0,3.25) {Results};
+
+        % Bottom / development workflow blocks
+        \node (sel) [mainblock] at (0,0) {Data\\Selection};
+        \node (prep) [mainblock] at (4.0,0) {Data\\Preprocessing};
+        \node (trans) [mainblock] at (8.0,0) {Data\\Transformation};
+        \node (mine) [mineblock] at (12.0,0) {Data\\Mining};
+        \node (eval) [evalblock] at (12.0,-2.65) {Evaluation \&\\Verification};
+
+        % Frame labels
+        % Change x to recenter horizontally, y to move label up/down.
+        \node[font=\small\bfseries] at (-0.7,-3.5) {Development};
+        \node[font=\small\bfseries] at (-0.7,4.70) {Deployment};
+
+        % ==============================================================
+        % MAIN SOLID FLOW ARROWS
+        % If a line is slanted, align the relevant node x/y positions.
+        % ==============================================================
+        \draw [flow] (db.south) -- (sel.north);
+        \draw [flow] (sel.east) -- (prep.west);
+        \draw [flow] (prep.east) -- (trans.west);
+        \draw [flow] (trans.east) -- (mine.west);
+
+        \draw [flow] (mine.north) -- (inference.south);
+        \draw [flow] (newdata.east) -- (inference.west);
+        \draw [flow] (inference.east) -- (results.west);
+
+        \draw [flow] (mine.south) -- (eval.north);
+        \draw [lineflow] (eval.west) -- (0.0,-2.65);
+        \draw [flow] (0.0,-2.65) -- (sel.south);
+        \draw [flow] (4.0,-2.65) -- (4.0,-1.05) -- (prep.south);
+        \draw [flow] (8.0,-2.65) -- (8.0,-1.05) -- (trans.south);
+
+        % Dashed feedback / monitoring-related paths
+        % results -> eval = deployment results feed back into evaluation
+        % newdata -> db    = refreshed data loop / data arrival path
+        \draw [flow, dashed, red] (results.south) -- (16.0,-2.65) -- (eval.east);
+        \draw [flow, dashed, red] (newdata.west) -- (1.30,3.25) -- (db.east);
+        % \draw [flow, dashed, red] (db.east) -- (1.25,3.25) -- (newdata.west) ;
+    \end{tikzpicture}

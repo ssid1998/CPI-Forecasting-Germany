@@ -1,0 +1,42 @@
+%%%
+%
+% $Autor: Siddhanth Sharma $
+% $Date: 2024-10-31 11:15:45Z $
+% $File: file.tex $
+% $Version: 1 $
+%
+% Project: 
+%
+%%%
+
+\chapter{Overview of Forecasting Algorithms}
+\label{ch:forecasting-algorithm-overview}
+
+Before discussing ARIMA, SARIMA, and ETS in separate chapters, it is useful to introduce the common purpose of this algorithm block within the report. All three methods are used to forecast Germany's monthly CPI as a univariate time series, but they do so from different modeling perspectives \cite{Box2015,Hyndman2021}. This chapter therefore serves as a short conceptual bridge between the general machine-learning background and the detailed algorithm descriptions that follow.
+
+The choice of these three algorithms is consistent with the structure of the implemented repository. The project does not compare unrelated machine-learning paradigms, but focuses on established time-series forecasting approaches that can be trained on a single chronological CPI series and evaluated under the same holdout setting \cite{Hyndman2021,Hu2025}. In practical terms, all three models are fitted through the common wrapper structure in \FILELOC{Code/src/models.py} and are evaluated through the same pipeline in \FILELOC{Code/src/modeling\_pipeline.py}. Their comparison is therefore methodologically fair at the level of data source, forecast horizon, and evaluation metrics.
+
+Although the algorithms share the same target variable and evaluation setup, they differ in the type of temporal structure they emphasize. ARIMA focuses on autocorrelation and differencing-based dynamics in a non-seasonal setting. SARIMA extends that idea by adding explicit seasonal terms, which is especially relevant when monthly CPI exhibits recurring annual patterns. ETS approaches the same forecasting problem from an exponential-smoothing and state-space perspective, modeling level, trend, and seasonality directly rather than through autoregressive and moving-average components \cite{Box2015,Hyndman2021}.
+
+Table~\ref{tab:forecasting-algorithm-overview} summarizes the role of the three forecasting algorithms in this project.
+
+\begin{table}[htbp]
+    \centering
+    \caption{Introductory comparison of the forecasting algorithms used in the CPI project.}
+    \label{tab:forecasting-algorithm-overview}
+    {\small
+    \renewcommand{\arraystretch}{1.22}
+    \setlength{\tabcolsep}{7pt}
+    \begin{tabular}{L{2.7cm}L{4.8cm}L{5.5cm}}
+        \hline
+        Algorithm & Main modeling emphasis & Relevance for this project \\
+        \hline
+        ARIMA & Autoregressive and moving-average structure with differencing for trend handling & Provides a classical non-seasonal baseline for forecasting CPI from its historical temporal dependence \\
+        SARIMA & ARIMA structure extended by seasonal autoregressive, differencing, and moving-average terms & Captures possible yearly seasonality in monthly CPI observations and therefore tests whether explicit seasonal modeling improves forecast quality \\
+        ETS & Exponential smoothing with explicit level, trend, and seasonal components in a state-space framework & Offers an alternative forecasting perspective that is often effective when macroeconomic series are dominated by smooth structural patterns rather than complex autocorrelation alone \\
+        \hline
+    \end{tabular}
+    }
+\end{table}
+
+This introductory chapter is intentionally concise. Its purpose is not to repeat the detailed theory that belongs in the following algorithm-specific chapters, but to explain why these three methods appear together and why their comparison is meaningful for the CPI forecasting task. The next chapters therefore examine ARIMA, SARIMA, and ETS individually with respect to their structure, assumptions, hyperparameters, and concrete use in the repository.

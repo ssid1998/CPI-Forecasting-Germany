@@ -1,0 +1,14 @@
+\begin{tikzpicture}[node distance= 1.5 cm, auto, every node/.style={rectangle, draw, rounded corners, fill=blue!10, minimum width=5 cm, minimum height=1cm, align=center}, >=stealth']
+    \node (data) {Acquire Destatis CPI CSV};
+    \node (clean) [below=of data] {Implement data loading and cleaning};
+    \node (eda) [below=of clean] {Add EDA and transformation diagnostics};
+    \node (models) [below=of eda] {Implement ARIMA, ETS, and SARIMA wrappers};
+    \node (eval) [below=of models] {Train, evaluate, and serialize models};
+    \node (app) [below=of eval] {Build Streamlit dashboard};
+    
+    \draw [->, thick] (data) -- (clean);
+    \draw [->, thick] (clean) -- (eda);
+    \draw [->, thick] (eda) -- (models);
+    \draw [->, thick] (models) -- (eval);
+    \draw [->, thick] (eval) -- (app);
+\end{tikzpicture}

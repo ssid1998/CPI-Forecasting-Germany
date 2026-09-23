@@ -1,0 +1,61 @@
+%%%%%%%%%%%%
+%
+% $Autor: Wings $
+% $Datum: 2019-03-05 08:03:15Z $
+% $Pfad: MainFunction.tex $
+% $Version: 4250 $
+% !TeX spellcheck = en_GB/de_DE
+% !TeX encoding = utf8
+% !TeX root = ../../CPIManual
+%
+%%%%%%%%%%%%
+
+\chapter{System Overview}
+\label{ch:mainfunction}
+
+The main function of the system is to help a user inspect and compare classical time-series forecasts for Germany's monthly Consumer Price Index. In practical terms, the software loads the official Destatis CPI history, reloads previously trained ARIMA, ETS, and SARIMA models, and displays their forecasts against the hidden 24-month test period inside an interactive Streamlit dashboard. The user does not have to train a model during every session, but the trained model files must exist before the dashboard can display results.
+
+The current implementation is intentionally focused. It is not a general forecasting platform for arbitrary datasets. Instead, it is a project-specific application for the CPI series stored in \FILELOC{Code/data/61111-0002\_en.csv}. The dashboard exposes the user-visible decisions that are relevant in the repository state: model selection, comparison of all models, and selection of the confidence interval level. The forecast horizon is fixed in the code to 24 months, which keeps the evaluation and user interpretation consistent with the project report and the saved metrics in \FILELOC{Code/plots/evaluation\_metrics.csv}.
+
+\section{Operational Goal}
+
+From the operator's perspective, the system answers three questions. First, how well do the three implemented forecasting approaches reproduce the CPI movement in the held-out test period? Second, which model currently performs best according to RMSE, MAE, and MAPE? Third, how wide is the forecast uncertainty when the user requests a stricter or looser confidence interval? The application therefore combines model loading, metric display, and visual interpretation in one interface rather than forcing the user to inspect raw console output.
+
+\section{Normal Usage Sequence}
+
+The intended user workflow is shown in Figure~\ref{fig:main-workflow}. Each step corresponds to a concrete repository artifact or command, which is important because the application depends on exact folder locations and pre-generated model files.
+
+\begin{figure}[H]
+    \centering
+    \resizebox{0.94\textwidth}{!}{%
+    \begin{tikzpicture}[node distance=1.2cm, >=latex, every node/.style={font=\small}]
+        \tikzstyle{stepbox}=[rectangle, rounded corners, draw=blue!60, fill=blue!10, align=center, text width=7.0cm, minimum height=0.9cm]
+        \node[stepbox] (data) {1. Verify the data file\\\FILELOC{Code/data/61111-0002_en.csv}};
+        \node[stepbox, below=of data] (train) {2. Train and save the forecasting models};
+        \node[stepbox, below=of train] (models) {3. Confirm that the saved model files exist in\\\FILELOC{Code/saved_models/}};
+        \node[stepbox, below=of models] (app) {4. Launch the Streamlit dashboard};
+        \node[stepbox, below left=1.3cm and 0.7cm of app] (use) {5a. Select one model\\or compare all models};
+        \node[stepbox, below right=1.3cm and 0.7cm of app] (interpret) {5b. Interpret the chart, metrics,\\and confidence interval};
+
+        \draw[->, thick] (data) -- (train);
+        \draw[->, thick] (train) -- (models);
+        \draw[->, thick] (models) -- (app);
+        \draw[->, thick] (app) -- (use);
+        \draw[->, thick] (app) -- (interpret);
+    \end{tikzpicture}%
+    }
+    \caption{Normal operating workflow for the CPI forecasting application.}
+    \label{fig:main-workflow}
+\end{figure}
+
+\section{Current Repository Result}
+
+The saved evaluation file shows that ETS \texttt{(A,A,A)} is currently the strongest model in the repository state, with RMSE $0.7697$, MAE $0.6453$, and MAPE $0.5298\%$. ARIMA \texttt{(1,1,1)} and SARIMA \texttt{(1,1,1)$\times$(1,1,1,12)} remain available because the application is designed for comparison rather than for single-model deployment only. This is useful for teaching, validation, and maintenance, because the user can immediately see whether a future data update changes the ranking.
+
+The exact commands associated with Figure~\ref{fig:main-workflow} are \SHELL{python3 src/modeling_pipeline.py} for model generation and \SHELL{python3 -m streamlit run app.py} for the dashboard launch. Users who prefer helper scripts can instead run \SHELL{./train_models.sh} and \SHELL{./run_dashboard.sh} from the \FILELOC{Code/} directory.
+
+\begin{tcolorbox}[colback=teal!5!white, colframe=teal!75!black, title=Current Best Model]
+Based on the latest evaluation, \textbf{ETS (A,A,A)} is the strongest model in the repository state, with RMSE~0.7697, MAE~0.6453, and MAPE~0.5298\%.
+
+\textbf{Why this matters:} When you open the dashboard, ETS will likely track the actual CPI most closely. Use the comparison mode to see how ARIMA and SARIMA differ.
+\end{tcolorbox}

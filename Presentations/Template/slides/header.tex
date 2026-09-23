@@ -1,0 +1,156 @@
+%%%%%%
+%
+% $Autor: Wings $
+% $Datum: 2020-01-18 11:15:45Z $
+% $Pfad: githubtemplate/Template/Presentations/Template/slides/header.tex $
+% $Version: 4620 $
+%
+% !TeX encoding = utf8
+% !TeX root = Rename
+%
+%%%%%%
+
+% Packages
+\usepackage[utf8]{inputenc}
+
+\ifdefined\isGerman
+\usepackage[ngerman]{babel}
+\else
+\ifdefined\isEnglish
+\usepackage[english]{babel}
+\else
+\usepackage[ngerman]{babel}
+\fi
+\fi
+
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{colortbl}
+\usepackage{cancel}
+
+%%%%%%%%% 2-Screen %%%%%%%%%
+\usepackage{pgfpages} 
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\usepackage{tikz}
+\usetikzlibrary{mindmap,calc,shapes,arrows,shapes.geometric,decorations.markings,patterns,decorations.pathmorphing}
+\usepackage{gnuplottex}
+\usepackage{pgf}
+\usepackage{scalefnt}
+\usepackage{url}
+
+\usepackage[natbib=true,style=alphabetic,backend=bibtex,useprefix=true]{biblatex}
+
+% --- FIXED HEADLINE SECTION ---
+\mode<presentation>
+\setbeamertemplate{headline}%
+{%
+	\begin{beamercolorbox}[rounded=true, center, wd=\paperwidth]{bgcolor}%
+		\begin{columns}[T]%
+			\begin{column}{9cm}%
+				\vspace{2pt}%
+				{\color{gray}\tiny Hochschule Emden/Leer} \\%
+				{\color{gray}\tiny Abteilung Maschinenbau} \\%
+				{\color{gray}\tiny MSR-Labor}%
+			\end{column}%
+			\begin{column}{2cm}%
+				\includegraphics[scale=0.25]{img/technik.jpg}%
+			\end{column}%
+		\end{columns}%
+	\end{beamercolorbox}%
+	\vspace{10pt}% This pushes the "Proposed Approach" title down and away from the header
+}
+
+% This removes the stray vertical bars/navigation symbols
+\setbeamertemplate{navigation symbols}{}
+\setbeamertemplate{sidebar right}{}
+\setbeamertemplate{sidebar left}{}
+
+\usetheme{default}
+\useinnertheme[shadow=true]{rounded}
+\usebackgroundtemplate
+{%
+	\rule{0pt}{\paperheight}%
+	\hspace*{\paperwidth}%
+	\makebox[0pt][r]{\includegraphics[width=\paperwidth]{img/hintergrund2.png}}%
+}
+
+\definecolor{HSELhellblau}{RGB}{138,198,203}
+\definecolor{HSELblau}{RGB}{0,59,95}
+\usecolortheme[named=HSELblau]{structure}
+
+\newcommand{\topline}{%
+	\tikz[remember picture,overlay] {%
+		\draw[HSELhellblau] ([yshift=-0.9cm]current page.north west)
+		-- ([yshift=-0.9cm,xshift=\paperwidth]current page.north west);}}
+
+\setbeamertemplate{section}[numbered]
+
+\newcommand{\STANDARD}[2]
+{
+	\mode<presentation>%
+	{%
+		\begin{frame}[allowframebreaks]{#1} #2 \end{frame}
+	}%
+	\mode<article>
+	{
+		\fcolorbox{AliceBlue}{LightGrey}
+		{
+			\begin{minipage}{\textwidth}{\bf #1} #2 \end{minipage}
+		}%
+		\medskip
+		\hrulefill
+	}
+}
+
+\newcommand{\MYNOTE}[1]
+{
+	\mode<presentation>{\only<article>{#1}}%
+	\mode<article>{#1}%
+}
+
+\newcommand{\sectionframe}[1]%
+{%
+	\begin{frame}
+		\centering
+		\Huge #1
+	\end{frame}%
+}
+
+\newcommand{\Mysection}[1]%
+{%
+	\section{#1}%
+	\sectionframe{#1}%
+}
+
+\usepackage{listings}
+\definecolor{dkgreen}{rgb}{0,.6,0}
+\definecolor{dkblue}{rgb}{0.655,0.113,.364}
+\definecolor{parameterc}{rgb}{.4,0,.6}
+\definecolor{typec}{rgb}{0,0.525,.702}
+\definecolor{stringc}{rgb}{0,.5019,.5019}
+\definecolor{keywordc}{rgb}{.6549, .1137, .3647}
+\definecolor{commentc}{rgb}{.5882, .5960, .5882}
+\definecolor{textc}{rgb}{.2,.2,.2}
+
+\lstdefinestyle{all}{
+	frame=single,
+	numbers=none,
+	basicstyle=\linespread{0.9}\ttfamily\footnotesize\color{textc},
+	tabsize=4,
+	showstringspaces=false,
+	rulecolor=\color{lightgray!40},
+	keywordstyle=\color{keywordc},
+	stringstyle=\color{stringc},
+	commentstyle=\color{commentc},
+	breaklines=true,
+}
+
+\lstdefinelanguage{MyBash} { language = Bash, style=all }
+\lstdefinelanguage{MyPython} { language = Python, style=all }
+
+\definecolor{PythonColor}{rgb}{0,0.5,1.}
+\newcommand{\PYTHON}[1]{\textcolor{PythonColor}{\texttt{#1}}}
+\definecolor{PythonColorHighLite}{rgb}{0.5,0,1.}
+\newcommand{\PYTHONHL}[1]{\textcolor{PythonColorHighLite}{\texttt{#1}}}

@@ -1,0 +1,136 @@
+{
+  "generatedAt": "2026-05-16T15:57:19.331917+00:00",
+  "passed": false,
+  "results": [
+    {
+      "name": "data_file_exists",
+      "passed": true,
+      "details": "Loaded 422 rows from /Users/sid/Documents/GitHub/BA/BA26-04-Time-Series/Code/data/61111-0002_en.csv"
+    },
+    {
+      "name": "series_non_empty",
+      "passed": true,
+      "details": "CPI series must contain at least one observation."
+    },
+    {
+      "name": "datetime_index",
+      "passed": true,
+      "details": "CPI series must use a DatetimeIndex."
+    },
+    {
+      "name": "monthly_frequency",
+      "passed": true,
+      "details": "CPI series must have strict month-start frequency (MS)."
+    },
+    {
+      "name": "no_duplicate_dates",
+      "passed": true,
+      "details": "Duplicate dates detected: 0"
+    },
+    {
+      "name": "no_missing_cpi",
+      "passed": true,
+      "details": "Missing CPI values detected: 0"
+    },
+    {
+      "name": "numeric_cpi",
+      "passed": true,
+      "details": "CPI column must remain numeric after loading."
+    },
+    {
+      "name": "pytest_monitoring_suite",
+      "passed": true,
+      "details": "============================== 10 passed in 1.05s =============================="
+    },
+    {
+      "name": "eda_pipeline",
+      "passed": false,
+      "details": "Traceback (most recent call last):\n  File \"/Users/sid/Documents/GitHub/BA/BA26-04-Time-Series/Code/src/eda_pipeline.py\", line 88, in <module>\n    run_eda()\n    ~~~~~~~^^\n  File \"/Users/sid/Documents/GitHub/BA/BA26-04-Time-Series/Code/src/eda_pipeline.py\", line 70, in run_eda\n    plot_acf(df['CPI_diff'].dropna(), lags=48, ax=axes[0], title='ACF of Differenced CPI')\n    ^^^^^^^^\nNameError: name 'plot_acf' is not defined"
+    },
+    {
+      "name": "modeling_pipeline",
+      "passed": true,
+      "details": "Saved LaTeX table to 'plots/evaluation_metrics.tex'."
+    },
+    {
+      "name": "artifact_model_ARIMA_1_1_1.joblib",
+      "passed": true,
+      "details": "Expected model artifact: /Users/sid/Documents/GitHub/BA/BA26-04-Time-Series/Code/saved_models/ARIMA_1_1_1.joblib"
+    },
+    {
+      "name": "artifact_model_ETS_A_A_A.joblib",
+      "passed": true,
+      "details": "Expected model artifact: /Users/sid/Documents/GitHub/BA/BA26-04-Time-Series/Code/saved_models/ETS_A_A_A.joblib"
+    },
+    {
+      "name": "artifact_model_SARIMA_1_1_1x1_1_1_12.joblib",
+      "passed": true,
+      "details": "Expected model artifact: /Users/sid/Documents/GitHub/BA/BA26-04-Time-Series/Code/saved_models/SARIMA_1_1_1x1_1_1_12.joblib"
+    },
+    {
+      "name": "artifact_plot_evaluation_metrics.csv",
+      "passed": true,
+      "details": "Expected plot/report artifact: /Users/sid/Documents/GitHub/BA/BA26-04-Time-Series/Code/plots/evaluation_metrics.csv"
+    },
+    {
+      "name": "artifact_plot_evaluation_metrics.tex",
+      "passed": true,
+      "details": "Expected plot/report artifact: /Users/sid/Documents/GitHub/BA/BA26-04-Time-Series/Code/plots/evaluation_metrics.tex"
+    },
+    {
+      "name": "artifact_plot_forecast_comparison.png",
+      "passed": true,
+      "details": "Expected plot/report artifact: /Users/sid/Documents/GitHub/BA/BA26-04-Time-Series/Code/plots/forecast_comparison.png"
+    },
+    {
+      "name": "artifact_plot_test_forecast_comparison.png",
+      "passed": true,
+      "details": "Expected plot/report artifact: /Users/sid/Documents/GitHub/BA/BA26-04-Time-Series/Code/plots/test_forecast_comparison.png"
+    },
+    {
+      "name": "metric_drift_ARIMA (1,1,1)_RMSE",
+      "passed": true,
+      "details": "ARIMA (1,1,1) RMSE: current=1.3262, baseline=1.3262, allowed_max=1.5251 (15.0% threshold)"
+    },
+    {
+      "name": "metric_drift_ARIMA (1,1,1)_MAE",
+      "passed": true,
+      "details": "ARIMA (1,1,1) MAE: current=1.1086, baseline=1.1086, allowed_max=1.2749 (15.0% threshold)"
+    },
+    {
+      "name": "metric_drift_ARIMA (1,1,1)_MAPE (%)",
+      "passed": true,
+      "details": "ARIMA (1,1,1) MAPE (%): current=0.9099, baseline=0.9099, allowed_max=1.0464 (15.0% threshold)"
+    },
+    {
+      "name": "metric_drift_ETS (A,A,A)_RMSE",
+      "passed": true,
+      "details": "ETS (A,A,A) RMSE: current=0.7697, baseline=0.7697, allowed_max=0.8852 (15.0% threshold)"
+    },
+    {
+      "name": "metric_drift_ETS (A,A,A)_MAE",
+      "passed": true,
+      "details": "ETS (A,A,A) MAE: current=0.6453, baseline=0.6453, allowed_max=0.7421 (15.0% threshold)"
+    },
+    {
+      "name": "metric_drift_ETS (A,A,A)_MAPE (%)",
+      "passed": true,
+      "details": "ETS (A,A,A) MAPE (%): current=0.5298, baseline=0.5298, allowed_max=0.6093 (15.0% threshold)"
+    },
+    {
+      "name": "metric_drift_SARIMA (1,1,1)x(1,1,1,12)_RMSE",
+      "passed": true,
+      "details": "SARIMA (1,1,1)x(1,1,1,12) RMSE: current=1.1909, baseline=1.1909, allowed_max=1.3695 (15.0% threshold)"
+    },
+    {
+      "name": "metric_drift_SARIMA (1,1,1)x(1,1,1,12)_MAE",
+      "passed": true,
+      "details": "SARIMA (1,1,1)x(1,1,1,12) MAE: current=1.0268, baseline=1.0268, allowed_max=1.1808 (15.0% threshold)"
+    },
+    {
+      "name": "metric_drift_SARIMA (1,1,1)x(1,1,1,12)_MAPE (%)",
+      "passed": true,
+      "details": "SARIMA (1,1,1)x(1,1,1,12) MAPE (%): current=0.8431, baseline=0.8431, allowed_max=0.9696 (15.0% threshold)"
+    }
+  ]
+}

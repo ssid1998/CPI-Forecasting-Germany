@@ -1,0 +1,178 @@
+%%%
+%
+% $Autor: Gargi Barve $
+% $Date: 2024-10-31 11:15:45Z $
+% $File: file.tex $
+% $Version: 2 $
+%
+% Project: BA26-04 Time Series Forecasting CPI Germany
+%
+%%%
+
+\chapter{Development Environment: Python}
+\label{ch:dev-env-python}
+
+\section{Python Version}
+
+The project is implemented in Python and uses a dependency set recorded in \texttt{Code/requirements.txt}. For reproducibility, the development environment should use a modern Python 3 installation that is compatible with \texttt{pandas}, \texttt{statsmodels}, \texttt{scikit-learn}, and \texttt{streamlit}. Version clarity is important because the project combines time-series modeling, serialization, and dashboard deployment, all of which depend on consistent package behavior across systems.
+
+\section{Python Description}
+
+Python is suitable for this project because it combines data handling, statistical modeling, visualization, and lightweight deployment in one ecosystem. Within the CPI forecasting workflow, Python supports all major stages of the KDD process: data loading from the Destatis CSV, exploratory analysis, model fitting, holdout evaluation, model serialization, and interactive presentation. The practical advantage is that the same language can be used from raw data ingestion up to the final application interface.
+
+The required packages listed in \texttt{Code/requirements.txt} are:
+
+\begin{itemize}
+	\item \texttt{pandas}
+	\item \texttt{matplotlib}
+	\item \texttt{statsmodels}
+	\item \texttt{scikit-learn}
+	\item \texttt{jinja2}
+	\item \texttt{joblib}
+	\item \texttt{streamlit}
+	\item \texttt{plotly}
+\end{itemize}
+
+Table~\ref{tab:python-environment-summary} summarizes the main environment components relevant to reproducibility.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Main components of the Python development environment.}
+	\label{tab:python-environment-summary}
+	\begin{tabular}{p{4cm}p{9cm}}
+		\hline
+		Component & Role in the project \\
+		\hline
+		Python & Core implementation language for data processing, modeling, and deployment \\
+		\texttt{Code/requirements.txt} & Dependency specification for the software environment \\
+		\texttt{Code/data/} & Location of the CPI source file used by the pipeline \\
+		\texttt{Code/src/} & Location of the data, EDA, and modeling scripts \\
+		\texttt{Code/saved\_models/} & Storage location for serialized trained models \\
+		\hline
+	\end{tabular}
+\end{table}
+
+\section{Python Installation}
+
+After Python has been installed, the project dependencies can be set up from the repository root with:
+
+\begin{Python}[caption={Installing the project environment}, label={lst:python-install-project}]
+	pip install -r Code/requirements.txt
+\end{Python}
+
+This command installs the libraries used by the CPI pipeline, including the statistical forecasting package, the evaluation package, and the dashboard framework.
+
+The installation workflow is visualized in Figure~\ref{fig:python-install-flow}.
+
+\begin{figure}[htbp]
+	\centering
+	\begin{tikzpicture}[
+		node distance=1.2cm,
+		every node/.style={font=\small},
+		stage/.style={rectangle, draw=blue!60, fill=blue!5, minimum width=6.5cm, minimum height=0.9cm, align=center},
+		arrow/.style={->, thick}
+	]
+		\node[stage] (py) {1. Install Python 3.x from python.org};
+		\node[stage, below=of py] (venv) {2. Create virtual environment: \texttt{python -m venv venv}};
+		\node[stage, below=of venv] (activate) {3. Activate environment};
+		\node[stage, below=of activate] (req) {4. Run \texttt{pip install -r Code/requirements.txt}};
+		\node[stage, below=of req] (verify) {5. Verify with project sanity check};
+		
+		\draw[arrow] (py) -- (venv);
+		\draw[arrow] (venv) -- (activate);
+		\draw[arrow] (activate) -- (req);
+		\draw[arrow] (req) -- (verify);
+	\end{tikzpicture}
+	\caption{Python environment installation workflow for the CPI forecasting project.}
+	\label{fig:python-install-flow}
+\end{figure}
+
+\section{Python Configuration}
+
+The report and code assume the repository structure remains unchanged. The most important directories are:
+
+\begin{itemize}
+	\item \texttt{Code/data/} for the raw Destatis CPI CSV,
+	\item \texttt{Code/src/} for data, EDA, and modeling scripts,
+	\item \texttt{Code/plots/} for generated charts and evaluation tables,
+	\item \texttt{Code/saved\_models/} for serialized trained models.
+\end{itemize}
+
+The data loader defaults to \texttt{data/61111-0002\_en.csv} when scripts are executed from the \texttt{Code} directory. By contrast, \texttt{Code/app.py} resolves paths relative to its own location, which makes deployment more stable.
+
+The configuration workflow is visualized in Figure~\ref{fig:python-config-flow}.
+
+\begin{figure}[htbp]
+	\centering
+	\begin{tikzpicture}[
+		node distance=1.2cm,
+		every node/.style={font=\small},
+		stage/.style={rectangle, draw=orange!60, fill=orange!5, minimum width=6.5cm, minimum height=0.9cm, align=center},
+		arrow/.style={->, thick}
+	]
+		\node[stage] (clone) {1. Clone or download the repository};
+		\node[stage, below=of clone] (check) {2. Verify \texttt{Code/data/61111-0002\_en.csv} exists};
+		\node[stage, below=of check] (dirs) {3. Confirm \texttt{Code/src/}, \texttt{Code/plots/}, \texttt{Code/saved\_models/} exist};
+		\node[stage, below=of dirs] (cwd) {4. Set working directory to \texttt{Code/} for scripts};
+		\node[stage, below=of cwd] (ready) {5. Environment ready for development};
+		
+		\draw[arrow] (clone) -- (check);
+		\draw[arrow] (check) -- (dirs);
+		\draw[arrow] (dirs) -- (cwd);
+		\draw[arrow] (cwd) -- (ready);
+	\end{tikzpicture}
+	\caption{Project configuration and directory verification workflow.}
+	\label{fig:python-config-flow}
+\end{figure}
+
+\section{Python First Steps}
+
+The environment can be validated with a short sequence that follows the implemented workflow:
+
+\begin{enumerate}
+	\item Install dependencies using \texttt{pip install -r Code/requirements.txt}.
+	\item Run the data loader from the \texttt{Code} directory.
+	\item Run the modeling pipeline to generate saved models and evaluation outputs.
+	\item Start the Streamlit dashboard.
+\end{enumerate}
+
+This sequence checks the most important dependencies and repository paths instead of verifying Python only in isolation.
+
+The first-steps workflow is visualized in Figure~\ref{fig:python-first-steps}.
+
+\begin{figure}[htbp]
+	\centering
+	\begin{tikzpicture}[
+		node distance=1.2cm,
+		every node/.style={font=\small},
+		stage/.style={rectangle, draw=green!60, fill=green!5, minimum width=6.5cm, minimum height=0.9cm, align=center},
+		arrow/.style={->, thick}
+	]
+		\node[stage] (install) {1. Install dependencies};
+		\node[stage, below=of install] (loader) {2. Run \texttt{python src/data\_loader.py}};
+		\node[stage, below=of loader] (pipeline) {3. Run \texttt{python src/modeling\_pipeline.py}};
+		\node[stage, below=of pipeline] (check) {4. Verify plots and models were created};
+		\node[stage, below=of check] (streamlit) {5. Run \texttt{streamlit run app.py}};
+		
+		\draw[arrow] (install) -- (loader);
+		\draw[arrow] (loader) -- (pipeline);
+		\draw[arrow] (pipeline) -- (check);
+		\draw[arrow] (check) -- (streamlit);
+	\end{tikzpicture}
+	\caption{Initial verification and testing workflow for the Python environment.}
+	\label{fig:python-first-steps}
+\end{figure}
+
+\section{Python Program: Project-Specific Sanity Check}
+
+For this project, a more meaningful replacement for a generic ``Hello, World!'' example is a successful CPI data-loading check. Listing~\ref{lst:python-cpi-sanity-check} demonstrates the minimum program needed to confirm that the environment, file path, and package imports work correctly.
+
+\begin{Python}[caption={Project-specific Python sanity check}, label={lst:python-cpi-sanity-check}]
+	from src.data_loader import load_cpi_data
+	
+	df = load_cpi_data("data/61111-0002_en.csv")
+	print(df.head())
+	print(len(df))
+\end{Python}
+
+If this script runs successfully, the system should return the first observations of the CPI series and confirm that the cleaned dataset contains 422 monthly records. This is a more relevant environment check than a generic console print, because it validates the actual data-processing path required by the rest of the project.

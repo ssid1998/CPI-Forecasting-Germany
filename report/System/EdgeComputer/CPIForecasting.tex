@@ -1,0 +1,211 @@
+	%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% $Autor: Wings $
+% $Datum: 2020-02-24 14:30:26Z $
+% $Pfad: ESP32/ESP32.tex $
+% $Version: 1792 $
+%
+% !TeX encoding = utf8
+% !TeX root = CPIForecasting
+%
+%
+%%%%%%%%%%%%%%%
+
+% ! TeX TXS-SCRIPT = foobar
+% //Trigger = ?load-this-file
+% app.load("/tmp/test/test.tex");
+% app.load("/tmp/test/a.tex");
+% TXS-SCRIPT-END
+%%%
+%
+% Auswahl der Sprache
+% Die nicht gewünschte Sprache muss auskommentiert werden:
+%\def\isGerman{1}
+\def\isEnglish{1}
+%
+%%%%%%%%%%%%%%%
+
+\documentclass[10pt,a4paper,bibliography=totoc]{scrbook}
+
+
+\input{../../General/packages}
+\input{../../General/commands}
+\input{../../General/tikzdefs}
+
+\input{../../General/acronyms}
+\input{../../General/Hyphenations}%
+
+% Bibliography resources
+% Secondary literature files provided by the professor.
+% Keep these entries in place; activate them only when their keys are needed
+% and do not conflict with project-specific bibliography entries.
+%\addbibresource{../../../LiteratureBIB/Jetson.bib}
+%\addbibresource{../../../LiteratureBIB/Literature.bib}
+\addbibresource{../../../LiteratureBIB/MyLiterature.bib}
+
+%\renewcommand{\Ausblenden}[1]{#1}
+
+\begin{document}
+    
+   
+\InputLanguage{Contents/General/}{Titlepage}
+
+%Inhaltsverzeichnis
+\tableofcontents
+\newpage
+
+\listoffigures
+\newpage
+
+\phantomsection
+\addcontentsline{toc}{chapter}{\TRANS{Liste der Programme}{List of Listings}}
+\lstlistoflistings
+\cleardoublepage
+
+% Ist in acronyms/Acronymlist aufgegangen
+%\input{../contents/JetsonNano/Symbollist}
+%\newpage
+
+\InputLanguage{Contents/General/}{Acronymlist}
+\newpage
+
+\part{Introduction}
+% Introduction - Siddhanth  
+	\input{../../Contents/General/Introduction} 
+  
+  
+\part{Domain Knowledge}
+ 	\input{../../Contents/General/DomainProblem} % Gargi
+ 	\input{../../Contents/General/DomainDataGeneral} % Nayan
+ 
+ 
+%%% Do not touch %%
+%\part{Domain Knowledge - Hardware}  
+%%% Do not touch %%
+
+
+\part{Domain Knowledge - Machine Learning}  
+	\input{../../Contents/General/Packages} % % SiddhanthSid% Siddhanthdhanth
+	\input{../../Contents/General/StatsModel} % Nayan-Done
+	\input{../../Contents/General/Scikit} % Gargi
+	\input{../../Contents/General/Streamlit} % Siddhanth
+	
+	\input{../../Contents/General/DataMining} % Siddhanth
+	\input{../../Contents/General/AlgorithmOverview} % Siddhanth
+	\input{../../Contents/General/ARIMA} % Nayan-Done
+	\input{../../Contents/General/SARIMA} % Gargi
+	\input{../../Contents/General/ETS} % Siddhanth
+%%% Do not touch %%
+%%% Do not touch %%
+
+
+\part{Domain Knowledge - Tools}  
+	\input{../../Contents/General/DevEnvPython} % Gargi
+
+
+%%% Do not touch %%
+%%% Do not touch %%
+
+\part{Methodology}  
+	\input{../../Contents/General/KDD} % Common
+
+
+\part{Application Development}
+	\input{../../Contents/General/DataOverview} % Nayan
+	\input{../../Contents/General/DocDev} % Gargi
+	\input{../../Contents/General/KDDDataSelection} % Nayan
+	\input{../../Contents/General/KDDDataProcessing} % Nayan
+	\input{../../Contents/General/KDDDataTransformation} % Common
+	\input{../../Contents/General/KDDDataMining} % Common	
+	\input{../../Contents/General/KDDDocDev} % Common
+	
+
+
+
+%%% Do not touch %%
+%%% Do not touch %%
+
+\part{Development to Deployment}
+	\input{../../Contents/General/DevtoDep} % Gargi
+	\input{../../Contents/General/DevtoDepEvalution} % Nayan
+	\input{../../Contents/General/DevtoDepValidation} % Nayan
+	\input{../../Contents/General/DevtoDepConclusion} % Nayan
+	
+
+
+%%% Do not touch %%
+%\part{Deployment}
+%%% Do not touch %%
+
+\part{Monitoring}
+  \input{../../Contents/General/Monitoring} % Gargi
+
+
+\part{Application Deployment}
+\input{../../Contents/General/AppDeployment} % Siddhanth
+
+
+%\part{Verification - Evaluation - Conclusion}
+
+
+\part{\TRANS{Anhang}{Appendix}}
+
+
+  \cleardoublepage
+  \input{../../Contents/General/BOM}
+
+  \cleardoublepage
+  \input{../../Contents/General/SBOM}
+
+
+
+% \part{Hints - Examples for LaTeX - Read and Use}
+%     
+% \InputLanguage{Contents/General/}{Hints}
+%
+% \newpage
+% \InputLanguage{Contents/General/}{Bezier}
+%
+% \newpage
+% \InputLanguage{Contents/General/}{ArcStrategy}
+%
+% \newpage
+% \InputLanguage{Contents/General/}{MapleFiles}
+%
+% \newpage
+% \InputLanguage{Contents/General/}{CodePython}
+%
+% \newpage
+% \InputLanguage{Contents/General/}{CodeArduino}
+%
+%
+% \newpage
+% \InputLanguage{Contents/General/}{FirstChapter}
+
+\cleardoublepage
+\appendix
+% \InputLanguage{Contents/General/}{AppendixTikz}
+%
+% \cleardoublepage
+% \InputLanguage{Contents/General/}{Appendix}
+%
+% \cleardoublepage
+% \InputLanguage{Contents/General/}{ModelCard}
+
+
+    
+ 
+
+%\addcontentsline{toc}{chapter}{Literaturverzeichnis}
+\printbibliography[
+  heading=bibintoc,
+  title={\TRANS{Literaturverzeichnis}{Literature}}
+]
+
+\newpage
+
+%\addcontentsline{toc}{chapter}{\TRANS{Stichwortverzeichnis}{Index}}
+%\printindex
+
+
+\end{document}

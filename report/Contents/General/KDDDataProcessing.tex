@@ -1,0 +1,45 @@
+%%%
+%
+% $Autor: Nayan Chavan$
+% $Date: 2024-10-31 11:15:45Z $
+% $File: file.tex $
+% $Version: 1 $
+%
+% Project: 
+%
+%%%
+
+\chapter{KDD Data Processing}
+\label{ch:kdd-data-processing}
+
+\section{Role of Data Processing}
+
+In the KDD process, data processing is the step that turns selected raw data into something the later models can actually use \cite{Fayyad:1996}. In this project, that means converting the selected Destatis export into a format that is reliable for the forecasting pipeline. The raw CSV is not a simple two-column file. It contains metadata at the top, status columns, repeated year labels, and future rows for which no published CPI value exists yet. These elements are useful in the original statistical table, but they need to be handled before the data can be used by time-series models.
+
+The implemented processing logic is located in \texttt{Code/src/data\_loader.py}. The function \texttt{load\_cpi\_data} is the central entry point for this stage. It reads the raw file, extracts the relevant rows, constructs the monthly time index, converts CPI values to numeric form, removes unavailable future observations, and returns a clean one-column dataframe. Keeping this logic in one place is useful because the same cleaned data is then reused consistently across exploratory analysis, modeling, and the Streamlit application.
+
+It is also important to note what this stage does \textbf{not} do. The project does not use data augmentation, synthetic sample generation, or artificial resampling. The processing stage is limited to cleaning, structuring, and validating the official CPI data so that the later forecasting models work on the original published series.
+
+\section{Parsing the Raw Export}
+
+The first processing step removes the non-data parts of the CSV export. The initial metadata rows are skipped, and reading stops when the footer section begins. Each remaining row is split into fields, and the expected columns are assigned names such as \texttt{Year}, \texttt{Month}, \texttt{CPI}, \texttt{YoY}, and \texttt{MoM}. Although the raw file contains year-on-year and month-on-month change values, only the CPI column is retained for modeling because the project is intentionally set up as a univariate forecasting problem.
+
+The year is printed only once per block in the raw Destatis export. For example, the year appears in the January row and the following months of the same year may have an empty year field. The preprocessing function therefore forward-fills the year value so that every monthly row can be assigned a complete date. Without this step, the data would not form a valid time index.
+
+\section{Date Construction and Frequency}
+
+The textual month names are mapped to numeric month values. The year and month are then combined into a datetime value and set as the dataframe index. The resulting index is sorted and converted to a strict monthly-start frequency using \texttt{asfreq('MS')}. This step is important because forecasting libraries use the index frequency to interpret what one forecast step actually means in calendar time.
+
+After processing, each observation represents one month and the observations are evenly spaced. This satisfies an important practical requirement for ARIMA, ETS, and SARIMA, which all assume an ordered sequence of time-dependent observations.
+
+\section{Cleaning the CPI Values}
+
+The CPI column is cleaned by replacing missing markers such as \texttt{...} and \texttt{.} with missing values, converting the remaining values to numeric format, and dropping rows where CPI is unavailable. This is why future months in 2026 that appear in the raw export but have not yet been published are excluded from the cleaned data.
+
+The final cleaned series contains \textbf{422} CPI observations and no missing CPI values. The first cleaned observation is January 1991 and the last cleaned observation is February 2026. This gives the later modeling pipeline a complete monthly target series without requiring interpolation or ad hoc gap filling.
+
+\section{Quality Checks}
+
+The processing stage supports several quality checks. The cleaned dataframe can be inspected for missing values, chronological order, and date range. In the current repository version, the CPI column contains zero missing values after unavailable future rows are removed. The index is chronological, and the monthly frequency is explicit.
+
+These checks are necessary because small processing errors can have large effects in time-series analysis. A missing month, a duplicated date, or a wrongly parsed numeric value would change the model's understanding of temporal distance and potentially distort the forecast. By centralizing the logic in \texttt{load\_cpi\_data}, the project ensures that EDA, modeling, tests, and the Streamlit application all work from the same cleaned source.

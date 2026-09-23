@@ -1,0 +1,185 @@
+%%%
+%
+% $Autor: Siddhanth Sharma, Nayan Chavan, Gargi Barve $
+% $Date: 2024-10-31 11:15:45Z $
+% $File: file.tex $
+% $Version: 2 $
+%
+% Project: BA26-04 Time Series Forecasting CPI Germany
+%
+%%%
+
+\chapter{KDD Data Mining}
+\label{ch:kdd-data-mining}
+
+\section{Purpose of Data Mining}
+
+The data-mining stage applies forecasting algorithms to the prepared CPI time series. In this project, data mining means estimating statistical time-series models and generating forecasts that can be compared against a chronological test set. The selected models are \textbf{ARIMA}, \textbf{ETS}, and \textbf{SARIMA}. They are classical forecasting methods and are appropriate for a univariate monthly economic series with trend, persistence, and possible seasonality.
+
+The implementation is located mainly in \FILELOC{Code/src/models.py} and \FILELOC{Code/src/modeling\_pipeline.py}. The model classes provide a consistent interface with \texttt{fit} and \texttt{predict} methods, while the modeling pipeline loads the cleaned data, creates the train-test split, trains each model, computes evaluation metrics, saves plots, and serializes trained model objects.
+
+\section{Model Inputs and Outputs}
+
+\subsection{Input Definition}
+
+The input to each model is the cleaned monthly CPI series from \FILELOC{Code/src/data\_loader.py}. More precisely, the training input consists of the first \textbf{398 observations} (January 1991 to February 2024), and the test input consists of the final \textbf{24 observations} (March 2024 to February 2026). The series is passed as a one-dimensional \textbf{pandas} \texttt{Series} with a monthly \texttt{DatetimeIndex} of frequency \texttt{MS}.
+
+The index frequency matters because \textbf{statsmodels} uses it to interpret the forecast horizon. A 24-step forecast from a monthly series means 24 months ahead, not 24 abstract time units. This connection between index frequency and forecast meaning is one reason why the preprocessing stage enforces \texttt{asfreq('MS')} before any model is trained.
+
+\subsection{Output Definition}
+
+The output of the data-mining stage consists of:
+
+\begin{itemize}
+	\item \textbf{Point forecasts:} A 24-step forecast vector for each model, representing the predicted CPI level for each month in the test period.
+	\item \textbf{Confidence intervals:} Where available, upper and lower bounds for the forecasts at a selectable confidence level (default 95\%).
+	\item \textbf{Evaluation metrics:} RMSE, MAE, and MAPE values comparing forecasts to actual test values.
+	\item \textbf{Serialized models:} \texttt{.joblib} files stored in \FILELOC{Code/saved\_models/} for dashboard reuse.
+	\item \textbf{Diagnostic plots:} Forecast comparison figures saved to \FILELOC{Code/plots/}.
+	\item \textbf{LaTeX table:} A formatted evaluation table exported to \FILELOC{Code/plots/evaluation\_metrics.tex}.
+\end{itemize}
+
+Table~\ref{tab:data-mining-artifacts} summarizes the complete set of tangible outputs produced by the data-mining stage.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Tangible artifacts produced by the data-mining stage.}
+	\label{tab:data-mining-artifacts}
+	\begin{tabular}{lll}
+		\hline
+		\textbf{Artifact} & \textbf{Location} & \textbf{Purpose} \\
+		\hline
+		Serialized models & \FILELOC{Code/saved\_models/*.joblib} & Reuse in dashboard without retraining \\
+		Forecast comparison plot & \FILELOC{Code/plots/forecast\_comparison.png} & Visual model comparison \\
+		Test-period plot & \FILELOC{Code/plots/test\_forecast\_comparison.png} & Zoomed test-period view \\
+		Metrics CSV & \FILELOC{Code/plots/evaluation\_metrics.csv} & Tabular metric export \\
+		Metrics LaTeX & \FILELOC{Code/plots/evaluation\_metrics.tex} & Report-ready table \\
+		\hline
+	\end{tabular}
+\end{table}
+
+\section{Selected Forecasting Models}
+
+\subsection{ARIMA}
+
+The ARIMA model is used as a baseline for autocorrelation-driven forecasting. The project configuration is \textbf{ARIMA(1,1,1)}. The first parameter captures autoregressive dependence, the differencing parameter handles the trend-like non-stationarity of the CPI level, and the moving-average parameter captures short-term error structure. This model is useful because it tests how well CPI can be forecast using a compact non-seasonal dependence structure.
+
+\subsubsection{Hyperparameter Justification}
+
+The order $(1,1,1)$ was chosen for the following reasons:
+
+\begin{itemize}
+	\item \textbf{Differencing order $d=1$:} The Augmented Dickey-Fuller test on the raw CPI series indicates non-stationarity, while the first-differenced series is stationary. This justifies one integration step.
+	\item \textbf{AR order $p=1$:} The ACF of the differenced series shows significant autocorrelation at lag 1, suggesting that one autoregressive term is appropriate.
+	\item \textbf{MA order $q=1$:} The PACF of the differenced series also shows a significant partial autocorrelation at lag 1, supporting one moving-average term.
+\end{itemize}
+
+These values are not the result of an automated grid search, but of a diagnostic-driven specification that balances model parsimony with the observed dependence structure \cite{Box2015,Hyndman2021}.
+
+\subsection{ETS}
+
+The ETS model represents the series through error, trend, and seasonal components. The implemented specification is \textbf{ETS(A,A,A)}, meaning additive error, additive trend, and additive seasonality with a seasonal period of 12. This is suitable for CPI because the series has a persistent level, a visible long-term trend, and possible monthly seasonal behavior. In the current implementation, ETS performs especially well because its level and trend components adapt smoothly to the recent CPI path.
+
+\subsubsection{Hyperparameter Justification}
+
+The additive specification was chosen because:
+
+\begin{itemize}
+	\item \textbf{Additive error:} The residual variance in the CPI series does not appear to grow proportionally with the level, so a multiplicative error model is not obviously better.
+	\item \textbf{Additive trend:} The long-run upward movement of CPI is approximately linear in the index level, making an additive trend component natural.
+	\item \textbf{Additive seasonality:} The seasonal decomposition plot shows seasonal fluctuations of roughly constant amplitude around the trend, which is consistent with additive rather than multiplicative seasonality.
+\end{itemize}
+
+The seasonal period of 12 is fixed by the monthly frequency of the data and the expectation of yearly patterns in consumer prices.
+
+\subsection{SARIMA}
+
+SARIMA extends ARIMA by adding seasonal autoregressive, differencing, and moving-average terms. The project uses \textbf{SARIMA(1,1,1)(1,1,1)$_{12}$}. The seasonal period of 12 corresponds to the monthly frequency of the data. This model is included because CPI may contain yearly patterns, and SARIMA can represent both non-seasonal and seasonal dependence in one model.
+
+\subsubsection{Hyperparameter Justification}
+
+The seasonal order $(1,1,1)_{12}$ was chosen for the following reasons:
+
+\begin{itemize}
+	\item \textbf{Seasonal AR order $P=1$:} The ACF of the differenced series shows some positive correlation near lag 12, suggesting that the value 12 months ago carries predictive information.
+	\item \textbf{Seasonal differencing $D=1$:} This allows the model to capture evolving seasonal patterns rather than assuming a fixed seasonal shape.
+	\item \textbf{Seasonal MA order $Q=1$:} This provides a seasonal shock-absorption mechanism analogous to the non-seasonal moving-average term.
+\end{itemize}
+
+The non-seasonal order $(1,1,1)$ is shared with the ARIMA model, which makes the comparison between ARIMA and SARIMA more interpretable: any difference in performance can be attributed to the seasonal component rather than to different non-seasonal specifications.
+
+\section{Training Procedure}
+
+The training procedure is implemented in \FILELOC{Code/src/modeling\_pipeline.py} and follows a consistent sequence for all three models:
+
+\begin{enumerate}
+	\item \textbf{Data loading:} The cleaned CPI series is loaded with \texttt{load\_cpi\_data}.
+	\item \textbf{Chronological split:} The final 24 observations are reserved for testing; the remaining 398 observations form the training set.
+	\item \textbf{Model instantiation:} Each model wrapper is created with the hyperparameters described above.
+	\item \textbf{Fitting:} The \texttt{fit} method is called on the training series. For ARIMA and SARIMA, this estimates the parameters via maximum likelihood. For ETS, this optimizes the smoothing parameters.
+	\item \textbf{Forecasting:} The \texttt{predict} method generates 24-step point forecasts.
+	\item \textbf{Serialization:} The fitted model object is saved to \FILELOC{Code/saved\_models/} using \textbf{joblib}.
+	\item \textbf{Evaluation:} RMSE, MAE, and MAPE are computed by comparing predictions to actual test values.
+	\item \textbf{Export:} Results are written to CSV, LaTeX, and PNG files in \FILELOC{Code/plots/}.
+\end{enumerate}
+
+This procedure is identical for all three models, which ensures that any difference in performance is due to the model structure rather than to different data handling or evaluation protocols.
+
+\section{Evaluation Metrics}
+
+The forecasts are evaluated with three regression-based metrics: RMSE, MAE, and MAPE. RMSE penalizes larger errors more strongly, MAE gives the average absolute forecast error in CPI index points, and MAPE expresses the average error as a percentage. Using all three metrics gives a broader view of model performance than relying on a single number.
+
+Table~\ref{tab:evaluation-metrics-results} presents the actual metric values obtained in the current implementation.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Evaluation metrics for the three forecasting models on the 24-month holdout period. Source: own calculations based on Destatis GENESIS table 61111-0002 and the repository forecasting pipeline \cite{DestatisCPIQuality2023,DestatisCPIWeighting2023}.}
+	\label{tab:evaluation-metrics-results}
+	\begin{tabular}{lccc}
+		\hline
+		\textbf{Model} & \textbf{RMSE} & \textbf{MAE} & \textbf{MAPE (\%)} \\
+		\hline
+		ARIMA (1,1,1) & 1.3262 & 1.1088 & 0.9104 \\
+		ETS (A,A,A) & 0.7697 & 0.6453 & 0.5298 \\
+		SARIMA (1,1,1)(1,1,1)$_{12}$ & 1.1909 & 0.9956 & 0.8173 \\
+		\hline
+	\end{tabular}
+\end{table}
+
+The ETS model achieves the lowest values across all three metrics, with an RMSE of 0.7697 CPI index points and a MAPE below 0.53\%. This means that, on average, the ETS forecast deviates from the actual CPI by less than one index point over the two-year test horizon. ARIMA and SARIMA perform less favorably under the same setup, with RMSE values above 1.1.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.95\textwidth]{forecast_comparison.png}
+	\caption{Forecast comparison showing training data, actual test CPI, and forecasts from all three models over the full relevant time range. Source: own visualization based on Destatis GENESIS table 61111-0002 and repository model outputs \cite{DestatisCPIQuality2023,DestatisCPIWeighting2023}.}
+	\label{fig:kdd-forecast-comparison}
+\end{figure}
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.95\textwidth]{test_forecast_comparison.png}
+	\caption{Zoomed view of the 24-month test period, comparing actual CPI values against ARIMA, ETS, and SARIMA forecasts. This view makes the divergence between models and the actual series easier to inspect. Source: own visualization based on Destatis GENESIS table 61111-0002 and repository model outputs \cite{DestatisCPIQuality2023,DestatisCPIWeighting2023}.}
+	\label{fig:kdd-test-forecast-comparison}
+\end{figure}
+
+\section{Residual Diagnostics}
+
+Forecast evaluation should not rely solely on error metrics. It is also important to examine whether the models have exploited all available information in the training data. If the residuals (the differences between actual and fitted values on the training set) still contain systematic patterns, the model is misspecified \cite{Box2015,Hyndman2021}.
+
+The project examines residuals through the following checks:
+
+\begin{itemize}
+	\item \textbf{Residual autocorrelation:} The Ljung-Box test is used to check whether the residuals are independently distributed. A model with significant residual autocorrelation has not fully captured the dependence structure of the series.
+	\item \textbf{Residual normality:} The Jarque-Bera test and visual inspection of the residual histogram assess whether the residuals are approximately normally distributed. This matters for the validity of prediction intervals.
+	\item \textbf{Residual heteroscedasticity:} The ARCH-LM test checks whether the residual variance changes over time. Heteroscedastic residuals may indicate that the model has not captured volatility clustering.
+\end{itemize}
+
+In the current implementation, the ETS model shows the most satisfactory residual behavior: its residuals are closer to white noise than those of ARIMA and SARIMA, and its prediction intervals are well calibrated. The ARIMA model, by contrast, leaves some autocorrelation in the residuals because its non-seasonal structure cannot capture the monthly seasonal effects that are visible in the CPI series. The SARIMA model improves on ARIMA in this respect, but its more complex parameterization does not translate into better out-of-sample performance in this particular test period.
+
+\section{Interpretation of the Data-Mining Stage}
+
+The purpose of comparing three models is not only to identify the lowest error, but also to understand which type of time-series structure is most useful for this CPI dataset. ARIMA focuses on non-seasonal autocorrelation after differencing. SARIMA adds an explicit seasonal structure for monthly data. ETS models the evolving level, trend, and seasonal behavior directly. The comparison therefore connects the data-mining results back to the earlier exploratory findings about trend, persistence, and seasonality.
+
+The results suggest that the German CPI series is best described as a smooth evolving level with additive trend and additive seasonal components. The ETS framework captures this structure more effectively than the autoregressive formulations of ARIMA and SARIMA, at least for the 24-month test period used in this project. This does not mean that ETS is universally superior for CPI forecasting; rather, it means that under the current data, evaluation protocol, and hyperparameter choices, ETS provides the most accurate and well-calibrated forecasts.
+
+A self-critical observation is that the hyperparameters were chosen through diagnostic inspection rather than through systematic optimization. A grid search or information-criterion-based selection (e.g., AICc minimization) might yield different orders for ARIMA and SARIMA, and could potentially improve their performance. This is noted as a limitation and as a direction for future work.

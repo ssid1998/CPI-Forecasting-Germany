@@ -1,0 +1,62 @@
+%%%
+%
+% $Autor: Gargi Barve $
+% $Date: 2024-10-31 11:15:45Z $
+% $File: file.tex $
+% $Version: 1 $
+%
+% Project: 
+%
+%%%
+
+\chapter{Documentation Developer}
+\label{ch:doc-dev}
+
+\section{Structure}
+
+The CPI forecasting software is structured as a modular Python application. The repository separates data ingestion, exploratory analysis, model definition, model evaluation, and user-facing deployment into distinct files. This structure is appropriate for the project because each stage of the forecasting process can be understood, tested, and extended independently.
+
+The main implementation files are located in \texttt{Code/src/} and \texttt{Code/app.py}. The supporting data and output folders are \texttt{Code/data/}, \texttt{Code/plots/}, and \texttt{Code/saved\_models/}. Together, these elements form a reproducible workflow from the raw Destatis CSV to trained models and dashboard-based visualization.
+
+\section{Idea}
+
+The central idea of the system is to transform an official macroeconomic time series into a reproducible forecasting application. The software begins with a statistical export from Destatis, converts it into a strict monthly CPI series, compares three classical models under the same holdout design, and then presents the results through an interactive dashboard. The system is therefore designed not only to compute forecasts, but also to make the forecasting comparison understandable and reusable.
+
+\begin{table}[htbp]
+	\centering
+	\caption{Developer-oriented architecture view of the CPI forecasting system.}
+	\label{tab:developer-architecture-view}
+	\begin{tabular}{p{4cm}p{8.5cm}}
+		\hline
+		Layer & Main responsibility \\
+		\hline
+		Data layer & Read and clean the official CPI source file \\
+		Analysis layer & Produce exploratory diagnostics and transformations \\
+		Modeling layer & Fit ARIMA, ETS, and SARIMA under one shared interface \\
+		Evaluation layer & Compute forecast metrics and export comparison artifacts \\
+		Deployment layer & Present saved results through the Streamlit application \\
+		\hline
+	\end{tabular}
+\end{table}
+
+\section{Flow Chart of Each Step in the Development}
+
+\begin{figure}[H]
+	\centering
+	\input{../../tikz/ApplicationDevelopment/DocDev/DevelopmentStepsFlowchart.tikz}
+	\caption{Main development steps of the CPI forecasting system.}
+	\label{fig:dev_flowchart}
+\end{figure}
+
+\section{ML Pipeline}
+
+The implemented machine-learning pipeline is sequential and data-dependent. First, \texttt{data\_loader.py} produces a clean CPI series. Second, \texttt{eda\_pipeline.py} supports interpretation through decomposition, stationarity diagnostics, and autocorrelation plots. Third, \texttt{modeling\_pipeline.py} creates the 24-month holdout split, fits the forecasting models, calculates RMSE, MAE, and MAPE, and saves trained model objects. Finally, \texttt{app.py} loads the saved artifacts and presents them interactively.
+
+\begin{figure}[H]
+	\centering
+	\input{../../tikz/ApplicationDevelopment/DocDev/MachineLearningPipeline.tikz}
+	\caption{Simplified machine-learning pipeline of the CPI forecasting project.}
+	\label{fig:ml_pipeline}
+\end{figure}
+
+This pipeline is readable and technically coherent because each file has a clear responsibility and because the application layer reuses, rather than duplicates, the modeling outputs. From a developer perspective, this separation reduces coupling between data preparation, model estimation, and deployment.

@@ -1,0 +1,25 @@
+\begin{tikzpicture}[
+    block/.style={rectangle, draw, fill=blue!10, text width=9em, text centered, rounded corners, minimum height=4em},
+    line/.style={draw, -latex, thick}
+]
+    \node [block] (input) at (0,0) {Raw Series $Y_t$};
+    
+    \node [block] (sdiff) at (4.5,1.5) {Seasonal Diff. $(1-B^s)^D$};
+    \node [block] (diff) at (4.5,-1.5) {Regular Diff. $(1-B)^d$};
+    
+    \node [block] (arma) at (9.5,-1.5) {Non-Seasonal ARMA($p,q$)};
+    \node [block] (sarma) at (9.5,1.5) {Seasonal ARMA($P,Q$)};
+    
+    \node [block] (mult) at (14.5,0) {Polynomial Multiplication};
+    \node [block] (output) at (19,0) {Forecast $\hat{Y}_{t+1}$};
+    
+    \draw [line] (input) -- (2,0) |- (sdiff);
+    \draw [line] (2,0) |- (diff);
+    
+    \draw [line] (sdiff) -- (sarma);
+    \draw [line] (diff) -- (arma);
+    
+    \draw [line] (sarma) -| (mult);
+    \draw [line] (arma) -| (mult);
+    \draw [line] (mult) -- (output);
+\end{tikzpicture}

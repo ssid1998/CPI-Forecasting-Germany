@@ -1,0 +1,99 @@
+%%%
+%
+% $Autor: Nayan Chavan$
+% $Date: 2024-10-31 11:15:45Z $
+% $File: file.tex $
+% $Version: 1 $
+%
+% Project: 
+%
+%%%
+
+\chapter{KDD Data Selection}
+\label{ch:kdd-data-selection}
+
+\section{KDD Step 1: Database to Data Selection}
+
+The first application-development step follows the KDD transition from the available database to the selected modeling data \cite{Fayyad:1996}. In this project, the database is the official Destatis GENESIS table for Germany's Consumer Price Index. The purpose of the data-selection step is to reduce this broader statistical export to the fields that are actually needed for a focused univariate CPI forecasting task.
+
+\begin{figure}[htbp]
+	\centering
+	\input{../../tikz/ApplicationDevelopment/KDDDataSelection/KDDDatabaseSelection.tikz}
+	\caption{KDD transition from the Destatis database to the selected CPI modeling dataset.}
+	\label{fig:kdd-database-selection}
+\end{figure}
+
+\subsection{Origin}
+
+The dataset originates from the \textbf{Destatis GENESIS Database}, table \textbf{61111-0002}. This table contains monthly Consumer Price Index values for Germany. Since Destatis is the Federal Statistical Office of Germany, the source is both authoritative and methodologically transparent, which makes it suitable for an economic forecasting project \cite{DestatisCPIQuality2023}.
+
+\subsection{Features}
+
+The raw export contains several fields, including year, month, CPI value, status markers, year-on-year percentage change, and month-on-month percentage change. For this project, only the fields required for univariate forecasting are selected:
+
+\begin{itemize}
+	\item \texttt{Date}: monthly time index created from year and month,
+	\item \texttt{CPI}: Consumer Price Index value used as the prediction target.
+\end{itemize}
+
+The percentage-change columns are not used as input features because the project focuses on forecasting CPI values from past CPI values only. This keeps the problem definition consistent and avoids mixing the target series with derived indicators from the same source.
+
+\subsection{Properties}
+
+The selected data has a set of properties that make it suitable for this project. It is an official macroeconomic time series, it is published at a regular monthly frequency, and it covers a long historical period. It is also univariate, because the forecasting task uses one target variable only: the CPI index level. These properties are important because they match the requirements of the selected classical forecasting methods and keep the comparison between models easy to interpret.
+
+\subsection{Data Types}
+
+After preprocessing, the \texttt{Date} field is stored as a monthly datetime index and the \texttt{CPI} field is stored as a numeric floating-point value. This format is appropriate for ARIMA, ETS, and SARIMA because these models require an ordered numeric time series with a clear temporal structure.
+
+\subsection{Quality}
+
+The selected data has high quality because it comes from an official statistical source and follows a regular monthly publication structure. During preprocessing, unavailable future values are removed, CPI values are converted to numeric format, and the observations are sorted chronologically. The cleaned dataset contains no missing CPI values, which is important because missing monthly values can distort time-series models.
+
+\subsection{Quantity}
+
+The cleaned dataset contains \textbf{422 monthly observations} from \textbf{January 1991} to \textbf{February 2026}. This amount of data is sufficient for the selected classical time-series models and allows the project to examine long-term trend, short-term variation, and possible yearly seasonality across several economic phases.
+
+\subsection{Augmentation}
+
+No data augmentation is used in this project. The forecasting task is based on an official monthly CPI series, and the project works with the published observations directly instead of generating artificial additional samples. This is also methodologically appropriate for a classical time-series study, because the goal is to model the original temporal structure of the CPI series rather than to expand the dataset synthetically.
+
+\subsection{Fairness and Bias}
+
+Fairness and bias are considered differently here than in person-level machine learning tasks. The dataset does not contain personal attributes such as age, gender, or income, so direct demographic bias is not the central issue. However, CPI is an aggregate index and may conceal differences between household groups or consumption patterns. The model therefore forecasts the overall German CPI and should not be interpreted as capturing every household's inflation experience equally.
+
+\section{Purpose of Data Selection}
+
+In the KDD process, data selection defines which subset of the available data is relevant for the analytical goal \cite{Fayyad:1996}. For this project, the goal is to forecast Germany's future monthly Consumer Price Index values. The selected data therefore has to represent German CPI consistently over time, be available at regular intervals, and contain enough observations for classical time-series models.
+
+The selected source is Destatis GENESIS table \textbf{61111-0002}. This table was chosen because it provides monthly CPI observations for Germany and because Destatis is the official authority responsible for publishing this indicator. The source therefore fits both the economic problem and the requirement for reliable data.
+
+The project also uses only \textbf{one database source}. This is a deliberate design choice. By relying on one official source, the project avoids inconsistencies that can arise when data from multiple providers use slightly different definitions, time coverage, or revision rules.
+
+\section{Selected Variables}
+
+The raw table contains several columns, including the CPI index level, change on the previous year's month, change on the previous month, and corresponding status markers. The project selects only the fields needed for the univariate forecasting task:
+
+\begin{itemize}
+	\item the calendar year,
+	\item the calendar month,
+	\item the Consumer Price Index value.
+\end{itemize}
+
+The year and month fields are combined into one monthly date index. The CPI value becomes the target series. The year-on-year and month-on-month change fields are excluded from model input because they are derived from the CPI itself and would shift the project away from a clean CPI-level forecasting task toward a more extensive feature-engineering setup.
+
+\section{Justification of the Selection}
+
+The CPI level is selected because it directly represents the price-level indicator that the project aims to forecast. Using the overall national CPI rather than category-level CPI keeps the scope focused and makes the model comparison easier to interpret. The resulting target is economically meaningful, publicly available, and comparable across the full observation period.
+
+The monthly frequency is also important. Monthly data provides more observations than annual data and allows the project to inspect possible yearly seasonality. At the same time, it is less noisy than daily or high-frequency financial data, which makes it a good match for the selected classical models: ARIMA, ETS, and SARIMA.
+
+\section{Selected Time Range}
+
+The repository version of the cleaned dataset covers \textbf{January 1991 to February 2026}. The raw export contains unavailable future rows for later months in 2026, but these rows are not selected for modeling because their CPI values are missing. After excluding unavailable entries, the selected dataset contains \textbf{422} monthly observations.
+
+This time range is long enough to capture several inflation environments, including relatively stable periods and the more recent inflation surge after 2021. Including these different regimes makes the forecast comparison more realistic, because the models are evaluated on a series that does not follow one perfectly stable pattern across the full history.
+
+\section{Selection Output}
+
+The output of the data-selection stage is a project-specific raw input file and a clearly defined modeling target. The file is stored at \texttt{Code/data/61111-0002\_en.csv}. The selected target is the monthly CPI index level for Germany, with base year 2020 equal to 100. This selected data is then passed to the preprocessing stage, where the raw statistical export is converted into a clean time series ready for analysis and forecasting.

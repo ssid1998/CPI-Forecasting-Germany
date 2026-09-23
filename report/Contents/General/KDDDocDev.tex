@@ -1,0 +1,52 @@
+%%%
+%
+% $Autor: Siddhanth Sharma, Nayan Chavan, Gargi Barve $
+% $Date: 2024-10-31 11:15:45Z $
+% $File: file.tex $
+% $Version: 1 $
+%
+% Project: 
+%
+%%%
+
+\chapter{Documentation Developer}
+\label{ch:documentation-developer}
+
+\section{Structure}
+
+From a KDD-oriented perspective, the developer documentation is organized around the transformation of data and artifacts through both the development and deployment layers of the system. The project starts with a raw CPI export, converts it into a cleaned dataframe, transforms it into a diagnostically interpretable time series, fits forecasting models, evaluates the resulting forecasts, and then exposes the saved artifacts through a dashboard. In the extended pipeline, new monthly data can later re-enter the process, trigger renewed execution, and update the deployment outputs. This architecture is modular and traceable, which makes it suitable for a university forecasting project with both analytical and software-engineering requirements.
+
+\section{Idea}
+
+The main system idea is to implement one reproducible path from official statistical data to interpretable forecast output. The software is intentionally modular so that failures or changes in one stage do not immediately require rewriting the full system. For example, the dashboard depends on saved model artifacts instead of retraining models, and the evaluation stage depends on a single cleaned data-loading function rather than multiple inconsistent file readers.
+
+\section{Flow Chart}
+
+\begin{figure}[htbp]
+    \centering
+    \input{../../tikz/ApplicationDevelopment/KDDDocDev/KDDDeveloperFlowchart.tikz}
+    \caption{KDD-oriented developer view of the CPI forecasting workflow.}
+    \label{fig:docdev-flowchart}
+\end{figure}
+
+\section{ML Pipeline}
+
+The machine-learning pipeline begins in \texttt{Code/src/data\_loader.py}, where the official export is converted into a one-column monthly CPI dataframe. The next stage, \texttt{Code/src/eda\_pipeline.py}, supports interpretation through ADF testing, differencing, decomposition, and autocorrelation analysis. Forecasting models are then defined in \texttt{Code/src/models.py} and trained in \texttt{Code/src/modeling\_pipeline.py}, where the last 24 months are held out for testing. The resulting model files are written to \texttt{Code/saved\_models/}, and the metrics are exported to \texttt{Code/plots/evaluation\_metrics.csv}. Finally, \texttt{Code/app.py} consumes these outputs for user-facing visualization, while later monthly CPI updates can feed back into the same pipeline for retraining and refreshed deployment artifacts.
+
+\begin{table}[htbp]
+    \centering
+    \caption{KDD-oriented artifact flow in the CPI forecasting system.}
+    \label{tab:kdd-artifact-flow}
+    \begin{tabular}{p{3.6cm}p{4cm}p{4.8cm}}
+        \hline
+        Artifact & Produced by & Consumed by \\
+        \hline
+        Clean CPI series & \texttt{data\_loader.py} & EDA and modeling stages \\
+        Diagnostic plots & \texttt{eda\_pipeline.py} & Report interpretation \\
+        Evaluation metrics CSV & \texttt{modeling\_pipeline.py} & Report and dashboard \\
+        Saved model files & \texttt{modeling\_pipeline.py} & \texttt{app.py} \\
+        \hline
+    \end{tabular}
+\end{table}
+
+This design is readable and maintainable because module boundaries are clear. Parameter handling is also explicit: the train-test horizon is fixed in the modeling pipeline, model specifications are defined in the model dictionary, and the Streamlit interface exposes only deployment-relevant settings such as model choice and confidence-interval level. Error communication is relatively lightweight, using Python exceptions in the data-loading stage and Streamlit warnings for deployment-stage issues such as missing model files or failed confidence-interval calculation.

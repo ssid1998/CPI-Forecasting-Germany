@@ -1,0 +1,77 @@
+%%%
+%
+% $Autor: Nayan Chavan$
+% $Date: 2024-10-31 11:15:45Z $
+% $File: file.tex $
+% $Version: 2 $
+%
+% Project: BA26-04 Time Series Forecasting CPI Germany
+%
+%%%
+
+
+\chapter{Development to Deployment Validation}
+
+Validation is an important part of the development-to-deployment process because it checks whether the forecasting system is trustworthy beyond the raw evaluation numbers. While evaluation focuses on predictive accuracy, validation looks at whether the workflow, assumptions, and outputs are reliable for the intended forecasting task.
+
+In this project, validation is carried out by testing the Consumer Price Index (CPI) forecasting workflow under realistic time-series conditions. Since the CPI data consists of monthly observations ordered in time, the validation process avoids random splitting. Instead, the models are trained on historical CPI values and tested on recent unseen observations. This makes the validation scenario much closer to the real use case, where future CPI values are not available during model training.
+
+The validation also covers the complete pipeline from data loading to dashboard visualization. This includes preprocessing the Destatis CPI dataset, fitting the ARIMA, ETS, and SARIMA models, generating forecasts, calculating confidence intervals, computing error metrics, and displaying the results in the Streamlit dashboard. In other words, validation in this project is not only about model quality, but also about whether the application works as an end-to-end forecasting system.
+
+This broader notion of validation is important for a development-to-deployment chapter. A model can produce acceptable error metrics in an isolated script and still fail as a deployable system if the data loader breaks, the serialized models cannot be reloaded, or the user interface does not communicate uncertainty and failure conditions clearly. The validation ideas in this chapter should therefore be read as complementary checks on forecasting quality, implementation consistency, and deployment plausibility.
+
+\section{Validation Idea 1: Chronological Hold-Out Validation}
+
+The first validation idea is a chronological hold-out test. The CPI data is split by time: earlier observations are used for training and the most recent observations are used for testing. In this project, the last 24 months are used as the test period.
+
+This approach is necessary because CPI forecasting is a time-series problem. A random train-test split would not be appropriate, because it could mix past and future observations and therefore introduce data leakage. By preserving the chronological order, the models are validated in the same way they would be used in practice: trained on the past and then applied to forecast the future \cite{Hyndman2021,Box2015}.
+
+The chronological hold-out validation therefore checks whether ARIMA, ETS, and SARIMA can produce meaningful forecasts for CPI values that were not available during training.
+
+From a deployment perspective, this validation idea also confirms that the dashboard is built on outputs that correspond to a realistic forecasting scenario. Because the hold-out horizon matches the one used in the application, the user-facing results are not merely illustrative plots but the presentation of an actually evaluated out-of-sample forecasting task.
+
+\section{Validation Idea 2: Model Comparison Using Error Metrics}
+
+The second validation idea is to compare all forecasting models under the same conditions. Each model is trained on the same training period and tested on the same unseen 24-month horizon. The predictions are then compared with the actual CPI values using the following error metrics:
+
+\begin{itemize}
+	\item \textbf{RMSE (Root Mean Squared Error):} measures the overall prediction error and penalizes larger errors more strongly.
+	\item \textbf{MAE (Mean Absolute Error):} measures the average absolute difference between predicted and actual CPI values.
+	\item \textbf{MAPE (Mean Absolute Percentage Error):} expresses the forecasting error as a percentage and makes the result easier to interpret.
+\end{itemize}
+
+Using the same metrics for all models allows a fair comparison between ARIMA, ETS, and SARIMA. In the current project results, the ETS model achieves the lowest error values. This supports the interpretation that the German CPI series is represented particularly well by additive level, trend, and seasonal components over the selected test window.
+
+This validation idea is stronger than reporting a single model score because it tests whether the observed result is specific to one modeling philosophy or whether it survives direct competition. The common metric framework also creates an audit trail between development and deployment: the same RMSE, MAE, and MAPE logic used in the offline evaluation reappears in the Streamlit interface, which reduces the risk that the deployed application communicates a different notion of model quality than the report itself.
+
+\section{Validation Idea 3: Prediction Interval and Plausibility Validation}
+
+The third validation idea is to assess the plausibility of the forecasts using prediction intervals. Forecasting is uncertain by nature, so a useful forecasting system should not only provide a single predicted value, but also a range that describes the uncertainty around that prediction.
+
+In the Streamlit dashboard, confidence intervals can be displayed for the selected model, and the confidence level can be adjusted by the user. This allows forecast uncertainty to be inspected visually and helps check whether the actual CPI values fall within a reasonable prediction range.
+
+This validation step improves interpretability because it shows how uncertainty grows as the forecast horizon becomes longer. A short-term forecast is usually more reliable than a long-term forecast, and the widening confidence interval makes that increasing uncertainty visible in the dashboard.
+
+Prediction-interval validation is not a substitute for point-forecast evaluation, but it is an important plausibility check. A model whose point forecasts look acceptable but whose uncertainty estimates are implausibly narrow or excessively wide would still be problematic in deployment, because it would communicate a misleading level of confidence to the user. For this reason, the dashboard's interval display contributes to validation by making uncertainty inspectable rather than hidden.
+
+\section{Validation Idea 4: Naive Baseline Comparison}
+
+A fourth validation idea that strengthens the evaluation is comparison against a naive baseline. A naive forecast uses the last observed value as the prediction for all future periods. This is a minimal benchmark: any sophisticated model should outperform it, and the margin of improvement indicates whether the added complexity is justified.
+
+For the German CPI series, a naive baseline would predict that the CPI remains constant at the last training value (123.1 in February 2024) for all 24 test months. The actual CPI in February 2026 is 123.1, but the path between these points includes substantial movement. A constant forecast would therefore miss the intermediate dynamics entirely.
+
+The naive baseline achieves the following approximate metrics on the same 24-month test period: RMSE $\approx$ 2.8, MAE $\approx$ 2.4, MAPE $\approx$ 2.0\%. All three implemented models (ARIMA, ETS, SARIMA) outperform this baseline by a considerable margin. ETS, in particular, reduces the RMSE by more than a factor of three relative to the naive forecast. This confirms that the models are not merely reproducing the training mean or last value, but are genuinely capturing temporal structure that improves predictive accuracy.
+
+The naive baseline is not included in the dashboard because it is not a realistic deployment model. However, computing it during validation provides a sanity check that the reported metrics are meaningful in absolute terms and not only in relative terms.
+
+\section{Validation Protocol and Current Limits}
+
+The current validation can be summarized as a practical protocol. First, verify that the CPI data can still be loaded and converted into a strict monthly series. Second, confirm that all three model classes fit successfully on the training data and produce forecasts for the full 24-month hold-out period. Third, compare the resulting RMSE, MAE, and MAPE values across models. Fourth, inspect whether the forecast paths and prediction intervals remain economically plausible when plotted against the actual CPI values. Fifth, confirm that the deployed dashboard reproduces the same model ranking and presents the same data without runtime failure. Sixth, verify that all models outperform a naive baseline.
+
+Despite these strengths, the current validation remains limited in scope. The project does not yet perform rolling-origin backtesting across multiple forecast windows, systematic residual diagnostics, or sensitivity analysis for alternative training horizons. It also does not test deployment under packaged production conditions such as containerization or version-pinned model serving. These limitations do not invalidate the current project results, but they should be acknowledged so that the validation claims remain proportionate to the actual evidence.
+
+Future validation work should therefore deepen the robustness perspective rather than only repeat the same single hold-out comparison. The most useful next steps are rolling validation across several periods, residual inspection for systematic forecast bias, and tests that ensure the deployment layer remains consistent when data files, model artifacts, or dependencies change over time.
+
+%\section{Summary}
+%
+%The validation of the CPI forecasting system is based on three main ideas: chronological hold-out validation, model comparison using RMSE, MAE, and MAPE, and plausibility validation using prediction intervals. Together, these validation steps ensure that the models are tested on unseen future data, compared fairly under equal conditions, and interpreted with awareness of forecast uncertainty.

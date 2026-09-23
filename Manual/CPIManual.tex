@@ -1,0 +1,82 @@
+%%%%%%
+%
+% $Autor: Siddhanth Sharma $
+%
+%
+% !TeX encoding = utf8
+%
+%%%%%%
+
+
+\documentclass[12pt,a4paper]{scrbook}
+
+% Auswahl der Sprache
+% Die nicht gewünschte Sprache muss auskommentiert werden:
+%\def\isGerman{1}
+\def\isEnglish{1}
+
+
+\input{General/Packages}
+\input{General/commands}
+\input{General/tikzdefs}
+
+\input{General/Hyphenations}%
+
+\emergencystretch=2em
+
+\begin{document}
+\hypersetup{pageanchor=false}
+
+\InputLanguage{Chapters/}{Titlepage} 
+\newpage
+\hypersetup{pageanchor=true}
+
+\pagenumbering{roman}
+
+\tableofcontents
+\cleardoublepage
+
+\addcontentsline{toc}{chapter}{\TRANS{Abbildungsverzeichnis}{List of figures}}
+\listoffigures
+\cleardoublepage
+
+\addcontentsline{toc}{chapter}{\TRANS{Tabellenverzeichnis}{List of tables}}
+\listoftables
+\cleardoublepage
+
+\pagenumbering{arabic}
+
+\InputLanguage{Chapters/}{Introduction}
+\InputLanguage{Chapters/}{QuickStart}
+\InputLanguage{Chapters/}{SystemOverview}
+\InputLanguage{Chapters/}{Installation}
+\InputLanguage{Chapters/}{DashboardUI}
+\InputLanguage{Chapters/}{Functions}
+\InputLanguage{Chapters/}{HelpAndSupport}
+\InputLanguage{Chapters/}{Troubleshooting}
+\InputLanguage{Chapters/}{Safety}
+\InputLanguage{Chapters/}{Specifications}
+\InputLanguage{Chapters/}{Maintenance}
+
+\vspace{0.5cm}
+
+\clearpage
+\begin{tcolorbox}[colback=blue!5!white,colframe=blue!60!black,
+	title={\faEnvelope\hspace{0.5em}Contact for Technical Assistance}, fonttitle=\bfseries]
+	For any technical questions or troubleshooting support, please contact the development team:
+	\begin{itemize}
+		\item Siddhanth Sharma -- \href{mailto:siddhanth.sharma@stud.hs-emden-leer.de}{siddhanth.sharma@stud.hs-emden-leer.de}
+		\item Nayan Chavan -- \href{mailto:nayan.chavan.1@stud.hs-emden-leer.de}{nayan.chavan.1@stud.hs-emden-leer.de}
+		\item Gargi Barve -- \href{mailto:gargi.nilesh.barve@stud.hs-emden-leer.de}{gargi.nilesh.barve@stud.hs-emden-leer.de}
+	\end{itemize}
+	Response time: typically within \textbf{2--3 working days}.
+\end{tcolorbox}
+
+% The manual currently contains no literature citations and therefore omits a bibliography.
+\cleardoublepage
+
+%\renewcommand{\indexname}{\TRANS{Stichwortverzeichnis}{Index}}
+%\addcontentsline{toc}{chapter}{\TRANS{Stichwortverzeichnis}{Index}}
+%\printindex
+
+\end{document}

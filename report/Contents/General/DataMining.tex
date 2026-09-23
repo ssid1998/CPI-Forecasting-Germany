@@ -1,0 +1,27 @@
+%%%
+%
+% $Autor: Siddhanth Sharma $
+% $Date: 2024-10-31 11:15:45Z $
+% $File: file.tex $
+% $Version: 1 $
+%
+% Project: 
+%
+%%%
+
+\chapter{Data Mining}
+\label{ch:data-mining-overview}
+
+In this project, the data-mining stage refers to the estimation of forecasting models on the prepared CPI time series. Because the selected task is a univariate monthly forecasting problem, the goal of data mining is not classification or causal explanation, but the extraction of predictive structure from temporal dependence, trend, and seasonality \cite{Fayyad:1996,Hyndman2021}.
+
+The comparison focuses on three classical model families: \textbf{ARIMA}, \textbf{ETS}, and \textbf{SARIMA}. These three models were selected because they represent the main statistical alternatives that are plausible for a monthly CPI series without introducing a completely different problem formulation. ARIMA serves as the non-seasonal baseline and tests whether the CPI can be forecast sufficiently through autocorrelation and differencing alone. SARIMA extends the same autoregressive logic by incorporating explicit yearly seasonality, which is a natural hypothesis for monthly macroeconomic data. ETS approaches the problem from a different modeling perspective entirely by treating level, trend, and seasonality as evolving state components rather than as autoregressive and moving-average terms \cite{Box2015,Hyndman2021}.
+
+This difference in perspective is the main reason why the comparison is academically stronger than presenting a single model in isolation. If only ARIMA were reported, the reader could not judge whether the observed forecast quality results from a generally appropriate treatment of CPI dynamics or merely from the choice of one familiar baseline. If only ETS were presented, the report would not show whether explicit seasonal autoregressive structure offers any advantage over smoothing-based decomposition. By comparing all three models under the same input data, the same forecast horizon, and the same error metrics, the report can relate performance differences directly to model assumptions instead of to differences in data preparation or evaluation design.
+
+The three methods also differ in the practical questions they ask of the CPI series. ARIMA asks whether past values and past forecast errors, after differencing, contain enough structure for accurate forecasts. SARIMA asks whether this same structure improves once a repeating 12-month pattern is modeled explicitly. ETS asks whether the CPI behaves more like a gradually evolving combination of level, trend, and seasonality that can be smoothed forward without strong stationarity assumptions. These are not redundant alternatives; they correspond to different theoretical readings of the same economic time series and therefore justify a structured comparison chapter before the model-specific sections begin.
+
+The implemented data-mining workflow is consistent across all models. The cleaned CPI series is split chronologically, the last 24 observations are reserved for testing, and each model is fitted on the earlier observations only. After fitting, forecasts are generated for the holdout period and compared with the observed CPI values using RMSE, MAE, and MAPE. This design supports fair comparison and avoids leakage from future information.
+
+From a methodological perspective, this common workflow is essential. The project does not compare models that were tuned on different horizons, trained on different samples, or judged with different metrics. Instead, the same monthly CPI target, the same train--test boundary, and the same forecast-evaluation logic are reused throughout \FILELOC{Code/src/modeling\_pipeline.py}. This gives the later algorithm chapters a shared frame of reference: when ARIMA, SARIMA, and ETS are discussed individually, they are not separate mini-projects, but three competing forecasting strategies embedded in one coherent pipeline.
+
+The algorithm-specific chapters that follow provide the detailed description, requirements, hyperparameters, input, output, and program examples for ARIMA, SARIMA, and ETS. Together, these chapters document the forecasting methods actually used in the repository and explain why they are relevant for Germany's CPI series.

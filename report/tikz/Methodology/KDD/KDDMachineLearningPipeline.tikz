@@ -1,0 +1,46 @@
+\tikzstyle{mainblock} = [rectangle, rounded corners=2pt, minimum width=2.55cm, minimum height=1.15cm, text centered, align=center, draw=blue!60!black, fill=blue!18]
+\tikzstyle{dbblock} = [mainblock, fill=red!18]
+\tikzstyle{mineblock} = [mainblock, fill=green!22]
+\tikzstyle{modelblock} = [mainblock, fill=yellow!22]
+\tikzstyle{evalblock} = [mainblock, minimum width=3.0cm, minimum height=1.05cm, fill=blue!18]
+\tikzstyle{flow} = [->, >=stealth, draw=blue!60!black]
+\tikzstyle{lineflow} = [-, >=stealth, draw=blue!60!black]
+\begin{tikzpicture}[scale=0.68, every node/.style={transform shape}]
+    \draw[draw=blue!60!black, line width=0.5pt] (-1.8,1.3) rectangle (18.3,5.0);
+    \draw[draw=blue!60!black, line width=0.5pt] (-1.8,-3.8) rectangle (18.3,1.0);
+    \fill[fill={rgb,255:red,138; green,198; blue,203}, fill opacity=0.65] (6.0,2.0) rectangle (17.8,4.55);
+    \draw[draw=blue!60!black, line width=0.5pt] (6.0,2.0) rectangle (17.8,4.55);
+    \node[font=\small\bfseries, text=blue!60!black] at (12.0,4.15) {Monitoring};
+
+    \node (db) [dbblock] at (0,3.25) {Database\\(Destatis CPI)};
+    \node (newdata) [modelblock] at (8.0,3.25) {New Data};
+    \node (inference) [modelblock] at (12.0,3.25) {Model,\\Inference};
+    \node (results) [modelblock] at (16.0,3.25) {Results};
+
+    \node (sel) [mainblock] at (0,0) {Data\\Selection};
+    \node (prep) [mainblock] at (4.0,0) {Data\\Preprocessing};
+    \node (trans) [mainblock] at (8.0,0) {Data\\Transformation};
+    \node (mine) [mineblock] at (12.0,0) {Data\\Mining};
+    \node (eval) [evalblock] at (12.0,-2.65) {Evaluation \&\\Verification};
+
+    \node[font=\small\bfseries] at (-0.7,-3.5) {Development};
+    \node[font=\small\bfseries] at (-0.7,4.70) {Deployment};
+
+    \draw [flow] (db.south) -- (sel.north);
+    \draw [flow] (sel.east) -- (prep.west);
+    \draw [flow] (prep.east) -- (trans.west);
+    \draw [flow] (trans.east) -- (mine.west);
+
+    \draw [flow] (mine.north) -- (inference.south);
+    \draw [flow] (newdata.east) -- (inference.west);
+    \draw [flow] (inference.east) -- (results.west);
+
+    \draw [flow] (mine.south) -- (eval.north);
+    \draw [lineflow] (eval.west) -- (0.0,-2.65);
+    \draw [flow] (0.0,-2.65) -- (sel.south);
+    \draw [flow] (4.0,-2.65) -- (4.0,-1.05) -- (prep.south);
+    \draw [flow] (8.0,-2.65) -- (8.0,-1.05) -- (trans.south);
+
+    \draw [flow, dashed, red] (results.south) -- (16.0,-2.65) -- (eval.east);
+    \draw [flow, dashed, red] (newdata.west) -- (1.30,3.25) -- (db.east);
+\end{tikzpicture}

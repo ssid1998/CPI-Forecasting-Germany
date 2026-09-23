@@ -1,0 +1,36 @@
+%%%%%%%%%%%%
+%
+% $Autor: OpenCode $
+% $Pfad: HelpAndSupport.tex $
+%
+%%%%%%%%%%%%
+
+\chapter{Help and Support}
+\label{ch:help-support}
+
+This chapter explains what a user should do when the dashboard does not behave as expected and where support should be requested. The goal is to help the operator distinguish between simple local usage issues and situations that should be escalated to the project team.
+
+\section{When to Ask for Support}
+
+Support should be requested when the dashboard cannot be started, when expected model outputs are missing, when the browser page loads but does not display the expected controls or graphs, or when the visible results appear inconsistent with the documented workflow of this manual. Minor interaction questions, such as how to hide a legend item or download a chart image, are answered in the user-interface and functions chapters and should normally be checked there first.
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=Support Channels]
+\begin{itemize}
+    \item \textbf{Primary contact:} contact the project authors through the agreed course communication channel.
+    \item \textbf{Repository support:} use the project GitHub repository for reproducible issue reporting when screenshots, logs, or file paths need to be shared.
+    \item \textbf{What to include:} operating system, launch command used, visible error message, and a screenshot of the dashboard or terminal window.
+\end{itemize}
+\end{tcolorbox}
+
+\section{Before Reporting an Issue}
+
+Before asking for support, the user should verify four things:
+
+\begin{enumerate}
+    \item the command was executed from the intended directory,
+    \item the browser address shown by Streamlit was opened correctly,
+    \item the expected dashboard title and sidebar controls are absent or incorrect, not merely collapsed,
+    \item the problem also remains after restarting the dashboard once.
+\end{enumerate}
+
+These checks reduce avoidable support traffic and make it easier for the project team to focus on genuine reproducible problems.

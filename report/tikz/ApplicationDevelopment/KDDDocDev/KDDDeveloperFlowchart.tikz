@@ -1,0 +1,16 @@
+\begin{tikzpicture}[node distance=1 cm, auto,
+    block/.style={rectangle, draw, rounded corners, fill=blue!10, minimum width=4.3cm, minimum height=1cm, align=center},
+    >=stealth']
+    \node [block] (select) {Select CPI source\\Destatis 61111-0002};
+    \node [block, below=of select] (process) {Parse, clean, and index data};
+    \node [block, below=of process] (transform) {Run diagnostics and transformations};
+    \node [block, below=of transform] (mine) {Fit ARIMA, ETS, SARIMA};
+    \node [block, below=of mine] (evaluate) {Evaluate with RMSE, MAE, MAPE};
+    \node [block, below=of evaluate] (deploy) {Serialize models and serve dashboard};
+
+    \draw [->, thick] (select) -- (process);
+    \draw [->, thick] (process) -- (transform);
+    \draw [->, thick] (transform) -- (mine);
+    \draw [->, thick] (mine) -- (evaluate);
+    \draw [->, thick] (evaluate) -- (deploy);
+\end{tikzpicture}

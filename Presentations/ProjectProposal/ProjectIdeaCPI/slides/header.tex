@@ -1,0 +1,78 @@
+% Packages
+\usepackage{changepage}
+\usepackage[T1]{fontenc}
+\usepackage{textcomp}
+\usepackage{tcolorbox}
+\tcbuselibrary{listings,skins}
+\usepackage{alltt}
+\usepackage[utf8]{inputenc}
+\usepackage[english]{babel}
+\usepackage{amsmath}
+\usepackage{amsfonts}
+\usepackage{amssymb}
+\usepackage{colortbl}
+\usepackage{caption}
+\usepackage{pgfpages}
+\usepackage{tikz}
+\usetikzlibrary{positioning,calc,shapes,arrows,shapes.geometric,patterns,decorations.pathmorphing,decorations.markings}
+\usepackage{pgf}
+\usepackage{scalefnt}
+\usepackage{url}
+\usepackage{graphicx}
+\usepackage{listings}
+
+% Formatting
+\mode<presentation>
+\setbeamertemplate{headline}
+{%
+    \begin{beamercolorbox}[rounded=true, center]{bgcolor}
+        \begin{columns}[T]
+            \begin{column}{9cm}
+                {\color{gray}\begin{tiny}Hochschule Emden/Leer\end{tiny}} \\
+                {\color{gray}\begin{tiny}MBIDA | BA26-04 Time Series\end{tiny}} \\
+            \end{column}
+            \begin{column}{2cm}
+                \includegraphics[scale=0.25]{img/technik.jpg}
+            \end{column}
+        \end{columns}
+    \end{beamercolorbox}
+}
+\insertsectionhead
+\insertsubsectionhead
+\usetheme{default}
+\useinnertheme[shadow=true]{rounded}
+\usebackgroundtemplate
+{%
+    \rule{0pt}{\paperheight}%
+    \hspace*{\paperwidth}%
+    \makebox[0pt][r]{\includegraphics[width=\paperwidth]{img/hintergrund2.png}}
+}
+
+\definecolor{HSELhellblau}{RGB}{138,198,203}
+\definecolor{HSELblau}{RGB}{0,59,95}
+\usecolortheme[named=HSELblau]{structure}
+\setbeamertemplate{section}[numbered]
+
+\newcommand{\STANDARD}[2]{%
+    \mode<presentation>{%
+        \begin{frame}{#1} #2 \end{frame}%
+    }%
+}
+
+\newcommand{\MYNOTE}[1]{}
+
+\newcommand{\sectionframe}[1]%
+{%
+    \begin{frame}
+        \Huge
+        \begin{center}
+            #1
+        \end{center}
+    \end{frame}%
+}
+
+\newcommand{\Mysection}[1]%
+{%
+    \section{#1}%
+    \sectionframe{#1}%
+}

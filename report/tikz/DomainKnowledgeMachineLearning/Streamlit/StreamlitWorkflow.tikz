@@ -1,0 +1,13 @@
+\begin{tikzpicture}[
+    block/.style={rectangle, draw, fill=blue!10, text width=9em, text centered, rounded corners, minimum height=4em},
+    line/.style={draw, -latex, thick}
+]
+    \node [block] (load) at (0,0) {Load CPI data and\\saved models};
+    \node [block] (select) at (4.5,0) {User selects model\\and CI level};
+    \node [block] (forecast) at (9,0) {Generate forecasts\\and metrics};
+    \node [block] (display) at (13.5,0) {Render dashboard\\plots and explanations};
+
+    \draw [line] (load) -- (select);
+    \draw [line] (select) -- (forecast);
+    \draw [line] (forecast) -- (display);
+\end{tikzpicture}

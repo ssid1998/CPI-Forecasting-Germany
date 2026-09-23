@@ -1,0 +1,18 @@
+\begin{tikzpicture}[
+    block/.style={rectangle, draw, fill=blue!10, text width=7em, text centered, rounded corners, minimum height=3em},
+    line/.style={draw, -latex}
+]
+    \node [block] (input) at (0,0) {Raw Series $Y_t$};
+    \node [block] (diff) at (3.5,0) {Differencing $d$ (Stationarity)};
+    \node [block] (ar) at (7,1.5) {AR($p$) \\ Lags};
+    \node [block] (ma) at (7,-1.5) {MA($q$) \\ Errors};
+    \node [block] (sum) at (10.5,0) {Integration / Summation};
+    \node [block] (output) at (14,0) {Forecast $\hat{Y}_{t+1}$};
+    
+    \draw [line] (input) -- (diff);
+    \draw [line] (diff) |- (ar);
+    \draw [line] (diff) |- (ma);
+    \draw [line] (ar) -| (sum);
+    \draw [line] (ma) -| (sum);
+    \draw [line] (sum) -- (output);
+\end{tikzpicture}

@@ -1,0 +1,56 @@
+%%%%%%%%%%%%%%%%%%%%%%%%
+%
+% $Autor: Siddhanth Sharma $
+% $Datum: 2026-04-21 $
+% $Pfad: report/Contents/General/Introduction.tex $
+% $Version: 1 $
+%
+% !TeX encoding = utf8
+%
+%%%%%%%%%%%%%%%%%%%%%%%%
+
+\chapter{Introduction}
+\label{ch:introduction}
+
+Time series forecasting uses temporally ordered observations to estimate future values from patterns observed in the past. In contrast to cross-sectional prediction, the order of the data itself carries information, because persistence, trend, seasonality, and irregular shocks all influence how a series evolves over time \cite{Box2015,Hamilton1994,Hyndman2021,Shumway2017}. These properties make time series methods particularly suitable for macroeconomic indicators that are published at regular intervals and whose current values are strongly related to earlier observations.
+
+One such indicator is the \textbf{Consumer Price Index (CPI)}, which measures changes in the general price level faced by private households. CPI forecasting is relevant for inflation monitoring, short-term economic planning, and the broader analysis of price stability. In the forecasting literature, inflation and CPI are established examples of economically important series whose prediction requires careful treatment of persistence, changing regimes, and evaluation under strict time order \cite{StockWatson1999,Hyndman2021}. In addition, official documentation from Destatis underlines the methodological importance of index quality, weighting structure, and periodic revisions for the interpretation of German CPI data \cite{DestatisCPIQuality2023,DestatisCPIWeighting2023}.
+
+This report studies Germany's monthly CPI as a \textbf{univariate forecasting problem}. The underlying data comes from the \textbf{Destatis GENESIS} database, table \textbf{61111-0002}, and after preprocessing yields \textbf{422 monthly observations} from \textbf{January 1991 to February 2026}. The implemented system compares three classical forecasting approaches---\textbf{ARIMA}, \textbf{ETS}, and \textbf{SARIMA}---on the same cleaned CPI series, thereby allowing a controlled comparison of model behavior under one common data and evaluation pipeline.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.95\textwidth]{Introduction/OverallCPI.png}
+	\caption{Overview of Germany's monthly Consumer Price Index (CPI) time series used in this project. The long-run upward movement, local fluctuations, and more recent inflation surge motivate the need for structured forecasting models. Source: own visualization based on Destatis GENESIS table 61111-0002 \cite{DestatisCPIQuality2023,DestatisCPIWeighting2023}.}
+	\label{fig:intro-cpi-series}
+\end{figure}
+
+\section{Problem Description}
+The central problem addressed in this report is the forecasting of future monthly CPI values for Germany from historical CPI observations alone. More precisely, the report asks which of the selected classical models---ARIMA, ETS, or SARIMA---provides the most suitable forecast under a consistent data preparation and evaluation setting. This is a constrained forecasting problem: the series is univariate, chronologically ordered, and economically meaningful, but forecast quality depends on whether its statistical structure is represented adequately.
+
+The implemented evaluation follows a chronological holdout design. The final \textbf{24 monthly observations} are reserved as an out-of-sample test period, while the earlier observations are used for model fitting. Forecast performance is then assessed with \textbf{RMSE}, \textbf{MAE}, and \textbf{MAPE}. This type of structured forecast evaluation is consistent with standard forecasting practice, which emphasizes transparent out-of-sample comparison instead of judging a model only by in-sample fit \cite{Armstrong:2001,Makridakis:2018}. At the introduction stage, the important point is therefore not yet which model wins, but that all candidate methods are evaluated under the same data, horizon, and metric setup so that the later comparison is methodologically fair.
+
+\section{Literature Background}
+Classical time series forecasting is well established in the literature. Box--Jenkins modeling, exponential smoothing, and seasonal autoregressive approaches all begin from the premise that a series must first be understood in terms of its dependence structure, trend behavior, and possible seasonal regularities before meaningful forecasts can be produced \cite{Box2015,Hamilton1994,Hyndman2021,Shumway2017}. More general forecasting handbooks likewise emphasize that method selection should depend on data structure, horizon, and evaluation design rather than on one universally preferred algorithm \cite{Armstrong:2001,Makridakis:2018}. This is directly relevant to CPI forecasting, because inflation-related series are not independent across time; rather, they reflect persistent dynamics, policy-sensitive changes, and recurring calendar effects \cite{StockWatson1999}.
+
+The specific model families selected for this project are likewise grounded in standard forecasting literature. ARIMA models are appropriate when autocorrelation and differencing-based stationarity are central considerations; ETS models represent level, trend, and seasonality through a state-space perspective; and SARIMA extends ARIMA by incorporating explicit seasonal terms \cite{Box2015,Hyndman2021,Shumway2017}. Recent CPI-oriented studies also continue to use such classical methods as meaningful baselines or direct competitors in comparative forecasting analyses \cite{Hu2025,Mchukwa2025,Nalici2025}. The comparison of ARIMA, ETS, and SARIMA therefore provides both methodological clarity and practical relevance.
+
+\section{Challenges}
+Several challenges arise when forecasting CPI with classical time series methods. First, the series exhibits a long-run upward movement and therefore cannot be assumed stationary without inspection and, where required, differencing or model structures that explicitly accommodate trend \cite{Box2015,Hyndman2021}. Second, recurring seasonal effects may be present but may vary in strength across periods, making seasonal specification non-trivial. Third, macroeconomic time series are exposed to structural changes and external shocks, including energy-price movements and inflation regime shifts, so a model that fits one period well may generalize less effectively to another \cite{StockWatson1999,DestatisEnergyPriceTrends2023}. Fourth, official CPI series are methodologically robust but are still influenced by index construction, weighting adjustments, and data-collection conditions, all of which affect interpretation \cite{DestatisCPIQuality2023,DestatisCovidCPI2022}.
+
+An additional project-specific challenge is that the implemented setup is intentionally \textbf{univariate}. This design keeps the comparison transparent and reproducible, but it also means that potentially informative exogenous drivers such as energy prices, wage developments, exchange-rate effects, or monetary-policy indicators are not included directly. Consequently, the models are evaluated as pure time-series forecasters rather than as causal explanations of inflation.
+
+Finally, forecast evaluation must respect time order. Random train-test splits would ignore temporal dependence and create misleading performance estimates. A chronological holdout procedure is therefore required, and this choice is consistent both with forecasting best practice and with the KDD-oriented structure of the project \cite{Fayyad:1996,Hyndman2021,Armstrong:2001}.
+
+\section{Solution Approach}
+To address these challenges, the project follows the \textbf{KDD process} adopted throughout the course and reflected in the report structure. In practical terms, this means that the forecasting problem is handled as a sequence of connected stages rather than as model fitting alone. The workflow begins with selecting German CPI from the Destatis GENESIS database, continues through preprocessing and time-series-oriented transformation, applies ARIMA, ETS, and SARIMA under one common implementation pipeline, and then evaluates the resulting forecasts on a chronological holdout period using RMSE, MAE, and MAPE \cite{Fayyad:1996,Hyndman2021}.
+
+The saved outputs are subsequently reused in the Streamlit application for interactive inspection of forecasts and metrics. A more detailed methodological explanation, including the full KDD-based workflow with deployment and monitoring aspects, is presented later in Chapter~\ref{ch:kdd-methodology}.
+
+Beyond statistical forecasting itself, the project also focuses on the engineering and operational aspects of a forecasting workflow. The implemented system includes reproducible preprocessing pipelines, unified forecasting wrappers, chronological evaluation procedures, serialized model artifacts, and a Streamlit-based application layer for interactive forecast inspection. This broader software-oriented perspective is important because forecasting systems in practical environments must remain maintainable, reproducible, and extensible beyond the initial modeling stage \cite{Brownlee2017} 
+
+\section{Contribution of this Work}
+The contribution of this work is a reproducible comparison of three classical univariate forecasting models for Germany's CPI under one common pipeline for data loading, preprocessing, evaluation, and presentation. In addition to model estimation, the project contributes documented metrics, generated plots, serialized model artifacts, and a lightweight dashboard for result inspection. The work is therefore not limited to a theoretical model discussion; it also demonstrates how classical forecasting methods can be implemented and assessed systematically in a university-scale software and data project.
+
+\section{Report Structure}
+The remainder of this report is organized as follows. The next part develops the domain context of CPI forecasting in Germany and describes the underlying dataset. This is followed by chapters on the software environment, the main Python libraries, and the selected forecasting algorithms. The methodology chapter then presents the KDD-oriented project structure and maps it to the implemented workflow. Subsequent chapters document the application development process, the transformation and modeling stages, and the transition from development to deployment. The later parts discuss evaluation, validation, monitoring, and the Streamlit-based application layer, before the appendix summarizes supporting technical materials for reproducibility. 

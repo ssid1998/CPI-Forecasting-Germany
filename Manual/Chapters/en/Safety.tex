@@ -1,0 +1,49 @@
+%%%%%%%%%%%%
+%
+% $Autor: Wings $
+% $Datum: 2019-03-05 08:03:15Z $
+% $Pfad: SafetyGuidelines.tex $
+% $Version: 4250 $
+% !TeX spellcheck = en_GB/de_DE
+% !TeX encoding = utf8
+% !TeX root = ../../CPIManual
+%
+%%%%%%%%%%%%
+
+\chapter{Safety Guidelines}
+
+This project does not control physical hardware, so the main safety concerns are operational rather than mechanical. The user should nevertheless follow a few rules to avoid incorrect interpretations, damaged repository state, or broken application sessions.
+
+\section{Interpretation Safety}
+
+The dashboard is an academic forecasting tool. Its outputs should be treated as analytical support for learning and comparison, not as an official macroeconomic forecast for policy or investment decisions. A visually convincing chart does not remove the uncertainty inherent in forecasting, especially when inflation regimes change.
+
+\section{Data Integrity Safety}
+
+Normal users should not replace the CPI CSV at all. If a data update is genuinely required, it should be handled by a maintainer using a documented workflow. Do not mix manually edited values into the official series, because the saved models and the reported metrics would then no longer describe the same dataset.
+
+\section{Operational Safety}
+
+Do not delete files from \FILELOC{Code/saved\_models/} while the dashboard is being started or refreshed. Normal users should also avoid editing \FILELOC{Code/src/}, \FILELOC{Code/app.py}, or backend data files merely to solve a usage problem. If the dashboard does not behave as expected, consult Chapter~\ref{ch:troubleshooting} or report the issue through the support channel.
+
+\section{Dependency Safety}
+
+Install packages inside the dedicated virtual environment when possible. System-wide package installation can make troubleshooting harder because the application may then depend on an uncontrolled combination of Python libraries.
+
+\section{Privacy and Security Note}
+
+The project uses public macroeconomic data and therefore has no direct personal-data risk in normal use. The main protection goal is reproducibility: users should preserve the integrity of the repository structure, saved models, and evaluation outputs.
+
+\section{Usage Boundary}
+
+The safe operating boundary for a normal user is simple: launch the dashboard, use the dashboard, interpret the visible output, and export the graph if needed. Actions beyond that boundary, such as retraining models, replacing source data, or modifying code, belong to maintainers rather than end users.
+
+\begin{tcolorbox}[colback=red!5!white, colframe=red!75!black, title=Safety at a Glance]
+\begin{itemize}
+    \item \textbf{Do not} treat dashboard forecasts as official policy or investment advice.
+    \item \textbf{Do not} replace the CPI CSV or edit backend code unless you are a maintainer.
+    \item \textbf{Do not} delete files from \FILELOC{Code/saved\_models/} while the dashboard is running.
+    \item \textbf{Do} install dependencies inside the dedicated virtual environment.
+    \item \textbf{Do} preserve repository integrity so results remain reproducible.
+\end{itemize}
+\end{tcolorbox}

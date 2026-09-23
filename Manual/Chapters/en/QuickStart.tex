@@ -1,0 +1,59 @@
+%%%
+%
+% Quick Start
+%
+%%%
+
+\chapter{Quick Start}
+\label{ch:quick-start}
+
+This chapter provides the shortest route from repository download to a working CPI dashboard. It is intended for users who want to start the application quickly and only then read the more detailed explanations in the later chapters.
+
+\section{Recommended First Path}
+
+For most users, the simplest workflow is:
+
+\begin{enumerate}
+    \item open the \FILELOC{Code/} folder,
+    \item install the Python environment once,
+    \item start the dashboard,
+    \item open the local browser address shown by Streamlit,
+    \item select a model and inspect the forecast.
+\end{enumerate}
+
+\begin{tcolorbox}[colback=green!5!white, colframe=green!75!black, title=Quick Start for Windows]
+\begin{enumerate}
+    \item Open the \FILELOC{Code/} folder.
+    \item Run \SHELL{setup\_env.bat} once to install dependencies.
+    \item Run \SHELL{run\_dashboard.bat}.
+    \item Open the local browser address shown in the terminal, usually \texttt{http://localhost:8501}.
+\end{enumerate}
+\textbf{Expected result:} the page title \textit{Germany Consumer Price Index (CPI) Forecasting} appears together with a sidebar and a forecast chart.
+\end{tcolorbox}
+
+\begin{tcolorbox}[colback=blue!5!white, colframe=blue!75!black, title=Quick Start for macOS / Linux]
+\begin{enumerate}
+    \item Open a terminal in \FILELOC{Code/}.
+    \item Run \SHELL{./setup\_env.sh} once to install dependencies.
+    \item Run \SHELL{./run\_dashboard.sh}.
+    \item Open the local browser address shown in the terminal.
+\end{enumerate}
+\textbf{Expected result:} the dashboard opens with the configuration sidebar on the left and the forecast view on the right.
+\end{tcolorbox}
+
+\section{What to Check on the First Screen}
+
+After a successful launch, the user should see the following items:
+
+\begin{itemize}
+    \item the title \textit{Germany Consumer Price Index (CPI) Forecasting},
+    \item a sidebar with \textbf{Select Model} and \textbf{Confidence Interval Level},
+    \item either a single-model forecast view or a comparison view,
+    \item metric output such as RMSE, MAE, and MAPE.
+\end{itemize}
+
+If these elements do not appear, continue with Chapter~\ref{ch:installation-first-launch} and Chapter~\ref{ch:troubleshooting}.
+
+\section{What This Manual Covers Next}
+
+The remaining chapters are organised according to practical user tasks. The manual first explains the purpose of the dashboard, then the installation and first launch, the user interface, the main dashboard functions, support channels, troubleshooting, safety guidelines, technical specifications, and maintainer-only upkeep notes.

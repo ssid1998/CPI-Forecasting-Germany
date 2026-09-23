@@ -1,0 +1,47 @@
+%%%%%%%%%%%%
+%
+% $Autor: Wings $
+% $Datum: 2019-03-05 08:03:15Z $
+% $Pfad: ListOfParts.tex $
+% $Version: 4250 $
+% !TeX spellcheck = en_GB/de_DE
+% !TeX encoding = utf8
+% !TeX root = ../../CPIManual
+%
+%%%%%%%%%%%%
+
+\chapter{List of Parts}
+
+Although this project is software-first and does not depend on a physical bill of materials, the operator still needs an overview of the essential software parts that make the system work. Table~\ref{tab:list-of-parts} lists the components that must be present for normal operation.
+
+\begin{table}[H]
+    \centering
+    \small
+    \setlength{\tabcolsep}{5pt}
+    \renewcommand{\arraystretch}{1.15}
+    \caption{Operational parts required by the user manual.}
+    \label{tab:list-of-parts}
+    \begin{tabularx}{\textwidth}{|L{2.9cm}|L{3.6cm}|X|}
+        \hline
+        \textbf{Part} & \textbf{Location} & \textbf{Purpose} \\
+        \hline
+        Streamlit application & \FILELOC{Code/app.py} & User interface for model selection, metric display, and forecast visualisation. \\
+        \hline
+        Data loader & \FILELOC{Code/src/data\_loader.py} & Loads the Destatis CSV file, cleans it, and returns a monthly CPI time series. \\
+        \hline
+        Training pipeline & \FILELOC{Code/src/modeling\_pipeline.py} & Fits ARIMA, ETS, and SARIMA models and saves evaluation outputs. \\
+        \hline
+        Raw CPI data & \FILELOC{Code/data/61111-0002\_en.csv} & Official monthly CPI source used by training and by the dashboard. \\
+        \hline
+        Saved models & \FILELOC{Code/saved\_models/} & Serialized \texttt{.joblib} artifacts loaded by the dashboard. \\
+        \hline
+        Output plots & \FILELOC{Code/plots/} & Stored forecast comparison figures and evaluation tables used by documentation. \\
+        \hline
+        Start scripts & \FILELOC{Code/start.sh}, \FILELOC{Code/start.bat} & Convenience scripts for setup, training, and dashboard launch. \\
+        \hline
+        Test scripts & \FILELOC{Code/scripts/run\_tests.sh} & Optional automated checks for data loading and model wrappers. \\
+        \hline
+    \end{tabularx}
+\end{table}
+
+The operator should treat these parts as a connected system. If the data file is missing, the models cannot be retrained. If the serialized models are missing, the dashboard opens but cannot present forecasts. If the application is started from the wrong working directory, path assumptions in the helper scripts may fail. For that reason, the following setup chapter always specifies both the command and the directory from which it must be executed.

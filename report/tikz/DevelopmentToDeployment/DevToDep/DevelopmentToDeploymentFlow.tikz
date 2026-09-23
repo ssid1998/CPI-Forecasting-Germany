@@ -1,0 +1,11 @@
+\begin{tikzpicture}[node distance=1.2cm, auto, every node/.style={rectangle, draw, rounded corners, fill=blue!10, minimum width=5cm, minimum height=1.1cm, align=center}, >=stealth']
+    \node (train) {Train forecasting models};
+    \node (save) [below=of train] {Serialize with \texttt{joblib.dump()}};
+    \node (store) [below=of save] {Store in \texttt{Code/saved\_models/}};
+    \node (load) [below=of store] {Load in \texttt{Code/app.py}};
+    \node (serve) [below=of load] {Render forecasts in dashboard};
+    \draw [->, thick] (train) -- (save);
+    \draw [->, thick] (save) -- (store);
+    \draw [->, thick] (store) -- (load);
+    \draw [->, thick] (load) -- (serve);
+\end{tikzpicture}

@@ -1,0 +1,20 @@
+\begin{tikzpicture}[
+    state/.style={circle, draw, fill=green!10, text width=4em, text centered, minimum height=4em},
+    line/.style={draw, -latex, thick}
+]
+    \node [state] (y_t) at (0,0) {$y_{t-1}$};
+    
+    \node [state] (level) at (4,2) {Level $l_t$};
+    \node [state] (trend) at (4,0) {Trend $b_t$};
+    \node [state] (season) at (4,-2) {Season $s_t$};
+    
+    \node [state] (y_next) at (8,0) {$\hat{y}_{t}$};
+    
+    \draw [line] (y_t) -- (level) node[midway, above left] {$\alpha$};
+    \draw [line] (y_t) -- (trend) node[midway, above] {$\beta$};
+    \draw [line] (y_t) -- (season) node[midway, below left] {$\gamma$};
+    
+    \draw [line] (level) -- (y_next);
+    \draw [line] (trend) -- (y_next);
+    \draw [line] (season) -- (y_next);
+\end{tikzpicture}

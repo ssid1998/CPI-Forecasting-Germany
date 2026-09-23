@@ -1,0 +1,13 @@
+\begin{tikzpicture}[
+    block/.style={rectangle, draw, fill=blue!10, text width=9em, text centered, rounded corners, minimum height=4em},
+    line/.style={draw, -latex, thick}
+    ]
+    \node [block] (forecast) at (0,1.5) {Forecasts from\\ARIMA / ETS / SARIMA};
+    \node [block] (actual) at (0,-1.5) {Actual CPI\\holdout values};
+    \node [block] (metric) at (5.5,0) {scikit-learn metrics\\RMSE / MAE / MAPE};
+    \node [block] (output) at (11,0) {CSV, table, and\\dashboard output};
+    
+    \draw [line] (forecast) -- (metric);
+    \draw [line] (actual) -- (metric);
+    \draw [line] (metric) -- (output);
+\end{tikzpicture}

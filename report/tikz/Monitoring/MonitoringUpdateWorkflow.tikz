@@ -1,0 +1,26 @@
+\begin{tikzpicture}[
+    node distance=0.95cm and 1.15cm,
+    every node/.style={font=\footnotesize},
+    block/.style={rectangle, draw=blue!60, rounded corners, fill=blue!8, text width=4.1cm, minimum height=0.9cm, align=center},
+    process/.style={rectangle, draw=orange!85!black, rounded corners, fill=orange!10, text width=4.25cm, minimum height=0.9cm, align=center},
+    decision/.style={diamond, draw=gray!80, fill=gray!10, aspect=2.0, text width=2.7cm, align=center, inner sep=0.5pt},
+    arrow/.style={->, thick, >=stealth}
+]
+    \node[block] (source) {New Destatis CPI CSV};
+    \node[process, below=of source] (validate) {Validate CPI file and monthly index};
+    \node[process, below=of validate] (tests) {Run monitoring-oriented pytest suite};
+    \node[process, below=of tests] (pipeline) {Run EDA and retraining / evaluation};
+    \node[process, below=of pipeline] (artifacts) {Verify model and plot artifacts};
+    \node[decision, below=of artifacts] (drift) {Metric drift within threshold?};
+
+    \node[block, below left=1.2cm and 1.45cm of drift] (fail) {Stop release and review failure};
+    \node[block, below right=1.2cm and 1.45cm of drift] (publish) {Accept run and refresh dashboard inputs};
+
+    \draw[arrow] (source) -- (validate);
+    \draw[arrow] (validate) -- (tests);
+    \draw[arrow] (tests) -- (pipeline);
+    \draw[arrow] (pipeline) -- (artifacts);
+    \draw[arrow] (artifacts) -- (drift);
+    \draw[arrow] (drift) -- node[midway, above left] {No} (fail);
+    \draw[arrow] (drift) -- node[midway, above right] {Yes} (publish);
+\end{tikzpicture}

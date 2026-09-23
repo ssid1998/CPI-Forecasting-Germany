@@ -1,0 +1,63 @@
+%%%
+%
+% $Autor: Siddhanth Sharma, Nayan Chavan, Gargi Barve $
+% $Date: 2024-10-31 11:15:45Z $
+% $File: file.tex $
+% $Version: 1 $
+%
+% Project: 
+%
+%%%
+
+\chapter{KDD Data Transformation}
+\label{ch:kdd-data-transformation}
+
+\section{Purpose of Transformation}
+
+In the KDD process, data transformation prepares the cleaned data for pattern discovery and modeling. For this project, transformation does not mean changing the economic meaning of CPI. Instead, it means deriving diagnostic views that reveal the time-series structure and support model choice. The main transformations are decomposition, stationarity testing, differencing, autocorrelation analysis, and chronological train-test splitting.
+
+\section{Stationarity Assessment}
+
+The original CPI series has a clear upward trend. Because ARIMA-type models are built around stationary behavior after differencing, the project checks whether the raw series behaves like a stationary process. The exploratory pipeline applies the Augmented Dickey-Fuller test to the original CPI series and to the first-order differenced series.
+
+If the original level series is non-stationary, first-order differencing is a natural transformation. Differencing replaces each value with the change from the previous month:
+
+\[
+	\Delta y_t = y_t - y_{t-1}.
+\]
+
+This transformation removes much of the long-term level movement and helps reveal short-term dependence. In the implemented modeling stage, ARIMA and SARIMA also include differencing parameters directly through their order definitions.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.95\textwidth]{differencing.png}
+	\caption{Differenced CPI series used to inspect stationarity and short-term movement after removing the dominant level trend. Source: own visualization based on Destatis GENESIS table 61111-0002 \cite{DestatisCPIQuality2023,DestatisCPIWeighting2023}.}
+	\label{fig:kdd-differencing}
+\end{figure}
+
+\section{Seasonal Decomposition}
+
+The monthly CPI series is decomposed into trend, seasonal, and residual components using an additive decomposition with period 12. This transformation supports interpretation of the series and helps justify the use of methods that include seasonality. A period of 12 is appropriate because the data frequency is monthly and one full seasonal cycle corresponds to one year.
+
+The decomposition is exploratory rather than a final model. It helps the project team understand whether yearly repeated behavior is visible and whether residual variation changes across time. This information is later connected to the comparison between ARIMA, ETS, and SARIMA.
+
+\section{Autocorrelation and Partial Autocorrelation}
+
+The project also uses autocorrelation and partial autocorrelation plots. The autocorrelation function shows how strongly the series is related to its own past values at different lags, while the partial autocorrelation function helps identify direct lag relationships after accounting for shorter lags. These diagnostics are especially relevant for ARIMA and SARIMA models, where autoregressive and moving-average orders describe how past values and past errors influence the forecast.
+
+\begin{figure}[htbp]
+	\centering
+	\includegraphics[width=0.95\textwidth]{acf_pacf.png}
+	\caption{ACF and PACF diagnostics for the transformed CPI series. These plots support the interpretation of temporal dependence and model-order choice. Source: own visualization based on Destatis GENESIS table 61111-0002 \cite{DestatisCPIQuality2023,DestatisCPIWeighting2023}.}
+	\label{fig:kdd-acf-pacf}
+\end{figure}
+
+\section{Chronological Train-Test Split}
+
+The final transformation for modeling is the chronological split into training and test data. The implementation reserves the last \textbf{24 months} as the test set. All earlier months are used for training. This transformation creates a realistic forecasting setup because the model is trained only on observations that would have been available before the test period.
+
+This design prevents data leakage. Random splitting would allow information from future months to appear in the training set, which is inappropriate for forecasting. The chronological split therefore makes the reported RMSE, MAE, and MAPE more meaningful as estimates of out-of-sample forecasting performance.
+
+\section{Transformation Output}
+
+The transformation stage produces several outputs used in later chapters. The cleaned CPI level series is used for model fitting. The differenced series, decomposition plot, and ACF/PACF plots support exploratory interpretation and model justification. The chronological train-test split defines the evaluation scenario used by the modeling pipeline. Together, these transformations connect the cleaned data from the processing stage to the data-mining stage where ARIMA, ETS, and SARIMA forecasts are produced.
