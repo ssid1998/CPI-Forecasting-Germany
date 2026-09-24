@@ -1,5 +1,3 @@
-# Forecasting Germany's Consumer Price Index (CPI)
-
 ![Project banner](./report/Images/General/banner.png)
 
 Prices do not change at a steady pace. This project uses the history of Germany's Consumer Price Index (CPI) to estimate where the index is likely to go next. It compares three well-known forecasting methods—ARIMA, ETS, and SARIMA—using the same fair test period.
