@@ -2,21 +2,9 @@
 
 ![Project banner](./report/Images/General/banner.png)
 
-An end-to-end time-series forecasting project for Germany's monthly Consumer Price Index (CPI). The project compares ARIMA, ETS, and SARIMA on the same chronological holdout period, publishes the results through an interactive Streamlit dashboard, and includes artifact and metric-drift monitoring.
+Prices do not change at a steady pace. This project uses the history of Germany's Consumer Price Index (CPI) to estimate where the index is likely to go next. It compares three well-known forecasting methods—ARIMA, ETS, and SARIMA—using the same fair test period.
 
-## Outcome
-
-**ETS(A,A,A) was the best-performing model** on the final 24-month test horizon. It achieved the lowest error for every evaluation metric and reduced RMSE by approximately 42% versus ARIMA and 35% versus SARIMA.
-
-| Model | RMSE | MAE | MAPE |
-| --- | ---: | ---: | ---: |
-| ARIMA (1,1,1) | 1.3262 | 1.1086 | 0.9099% |
-| **ETS (A,A,A)** | **0.7697** | **0.6453** | **0.5298%** |
-| SARIMA (1,1,1) × (1,1,1,12) | 1.1909 | 1.0268 | 0.8431% |
-
-In practical terms, ETS forecasts were, on average, less than one CPI index point away from the observed value during the evaluation window.
-
-![Forecast comparison](./report/Images/forecast_comparison.png)
+The work goes beyond a notebook: it includes data preparation, model training, a Streamlit dashboard for exploring forecasts, and monitoring checks for the saved model artifacts and their accuracy.
 
 ## Dataset and evaluation design
 
@@ -30,36 +18,29 @@ The chronological holdout prevents future information from leaking into model tr
 
 ## Methodology and deployment workflow
 
-The implementation follows KDD from data selection through evaluation, then connects the trained artifacts to a dashboard and a monitoring loop. New Destatis CPI data can be checked against the established baseline before the forecasts are refreshed.
+The implementation follows KDD from data selection through evaluation, then connects trained artifacts to a dashboard and a monitoring loop. New Destatis CPI data can be checked against the established baseline before forecasts are refreshed.
 
-```mermaid
-flowchart TB
-  subgraph Deployment
-    DB["Database<br/>Destatis CPI"]
-    subgraph Monitoring
-      ND[New data] --> MI[Model inference] --> R[Results]
-    end
-    DB -. updated data .-> ND
-  end
-
-  subgraph Development
-    DS[Data selection] --> DP[Data preprocessing] --> DT[Data transformation] --> DM[Data mining]
-    DM --> EV[Evaluation & verification]
-    EV --> DS
-    EV --> DP
-    EV --> DT
-  end
-
-  DB --> DS
-  DM --> MI
-  R -. monitoring feedback .-> EV
-```
+![KDD development, deployment, and monitoring workflow](./assets/kdd-deployment-monitoring-workflow.png)
 
 1. **Data selection:** load the monthly Destatis CPI series and retain the date and CPI fields.
 2. **Preprocessing and transformation:** validate chronology and missing values, decompose the series, test stationarity with ADF, use differencing where needed, and inspect ACF/PACF behavior.
 3. **Data mining:** fit ARIMA(1,1,1), ETS(A,A,A), and SARIMA(1,1,1) × (1,1,1,12).
 4. **Evaluation:** compare each model on the fixed 24-month holdout with RMSE, MAE, and MAPE.
 5. **Deployment and monitoring:** serve saved model artifacts in Streamlit; check required artifacts and flag metric drift against a 15% baseline threshold.
+
+## Final results
+
+**ETS(A,A,A) was the best-performing model** on the final 24-month test horizon. It achieved the lowest error for every evaluation metric and reduced RMSE by approximately 42% versus ARIMA and 35% versus SARIMA.
+
+| Model | RMSE | MAE | MAPE |
+| --- | ---: | ---: | ---: |
+| ARIMA (1,1,1) | 1.3262 | 1.1086 | 0.9099% |
+| **ETS (A,A,A)** | **0.7697** | **0.6453** | **0.5298%** |
+| SARIMA (1,1,1) × (1,1,1,12) | 1.1909 | 1.0268 | 0.8431% |
+
+In practical terms, ETS forecasts were, on average, less than one CPI index point away from the observed value during the evaluation window.
+
+![Forecast comparison](./report/Images/forecast_comparison.png)
 
 ## Interactive dashboard
 
