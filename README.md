@@ -1,5 +1,3 @@
-# BA26-04 Time Series | Forecasting Consumer Price Index (CPI) in Germany using ARIMA, ETS, and SARIMA
-
 ![Logo](./report/Images/General/banner.png "Project Logo")
 
 ## Project Overview
