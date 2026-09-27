@@ -1,8 +1,16 @@
 ![Project banner](./report/Images/General/banner.png)
 
-Prices do not change at a steady pace. This project uses the history of Germany's Consumer Price Index (CPI) to estimate where the index is likely to go next. It compares three well-known forecasting methods—ARIMA, ETS, and SARIMA—using the same fair test period.
+# Germany CPI Forecasting
 
-The work goes beyond a notebook: it includes data preparation, model training, a Streamlit dashboard for exploring forecasts, and monitoring checks for the saved model artifacts and their accuracy.
+This project forecasts Germany’s monthly Consumer Price Index (CPI) using historical inflation data. It compares three time-series forecasting models—ARIMA, ETS, and SARIMA—to understand which model gives the most reliable forecast.
+
+## What the project does
+
+- Prepares monthly CPI data for forecasting.
+- Trains and compares ARIMA, ETS, and SARIMA models.
+- Tests forecasts against the most recent 24 months of actual CPI data.
+- Shows forecasts and model results in a Streamlit dashboard.
+- Saves model outputs and runs basic checks to review forecast quality.
 
 ## Dataset and evaluation design
 
